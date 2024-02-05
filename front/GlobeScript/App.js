@@ -6,7 +6,9 @@ import LoginScreen from './screens/LoginScreen';
 import HomeScreen from './screens/HomeScreen';
 import Bienvenida from './screens/TedamoslaBienvenida/Bienvenida';
 import Registro from './screens/Registro';
-
+import Mail from './screens/forgot/Mail';
+import Verification from './screens/forgot/Verification';
+import Success from './screens/TedamoslaBienvenida/Success';
 const Stack = createNativeStackNavigator();
 export default function App() {
   return (
@@ -14,9 +16,11 @@ export default function App() {
       <Stack.Navigator>
         <Stack.Screen   options={{ headerShown: false }}  name="Bienvenida" component={Bienvenida} />
         <Stack.Screen options = {{headerShown: false}} name="Login" component={LoginScreen} />
-        <Stack.Screen options = {{headerShown: false}} name="Home" component={HomeScreen} />
-        {/* <Stack.Screen options = {{headerShown: false}} name="SignUp" component={SignUp} /> */}
+        <Stack.Screen options = {{headerShown: false}} name="Home" component={HomeScreen} /> 
         <Stack.Screen options = {{headerShown: false}} name="Registro" component={Registro} />
+        <Stack.Screen options = {{headerShown: false}} name="Mail" component={Mail} />
+        <Stack.Screen options = {{headerShown: false}} name="Verification" component={Verification} />
+        <Stack.Screen options = {{headerShown: false}} name="Success" component={Success} />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -30,3 +34,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+ 

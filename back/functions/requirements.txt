@@ -1,0 +1,4 @@
+ functions-framework
+Flask
+firebase-admin
+random2
