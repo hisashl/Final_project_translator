@@ -22,7 +22,7 @@ export default function Bienvenida() {
 
   return (
     <View style={styles.container}>
-      <View style={{ flex: 3 }}>
+      <View style={{ flex: 3}}>
         <FlatList
           data={slides}
           renderItem={renderItem}

@@ -1,99 +1,187 @@
-import { KeyboardAvoidingView, ScrollView, StyleSheet, Text, View,  Image, TouchableOpacity} from 'react-native'
-import React from 'react'
-{/* <Image source={require('../assets/images/logo.png')} style={styles.logo} /> */}
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  Alert,
+  View,
+  Image,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import axios from 'axios';
+import { useNavigation } from '@react-navigation/native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview';
 
 export default function LoginScreen() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    const source = axios.CancelToken.source();
+
+    return () => {
+      source.cancel('Componente desmontado');
+    };
+  }, []);
+
+  const handleLogin = useCallback(() => {
+    if (isLoading) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    axios
+      .post('https://us-central1-lingua-80a59.cloudfunctions.net/login', {
+        username: username,
+        password: password,
+      })
+      .then(response => {
+        if (response.data.includes('True')) {
+          Alert.alert('Success', 'Inicio de sesión exitoso');
+        } else {
+          Alert.alert('Error', 'Datos de inicio de sesión inválidos');
+        }
+      })
+      .catch(error => {
+        if (error.response) {
+          Alert.alert(
+            'Error',
+            'Solicitud fallida: ' +
+              error.response.status +
+              ' ' +
+              error.response.data
+          );
+        } else if (error.request) {
+          Alert.alert('Error', 'No se recibió respuesta del servidor');
+        } else {
+          Alert.alert('Error', 'Error al realizar la solicitud: ' + error.message);
+        }
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [isLoading, username, password]);
+
+  const signup = () => {
+    navigation.navigate('Registro');
+  };
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.card}>
-        <View style={styles.imageContainer}>
-        <Image source={require('../assets/logo.png')} style={styles.image} /> 
-        </View>
-        <Text style={styles.title}>
-        Te damos la bienvenida a LinguaSync
-          </Text>
-        <Text style={styles.description}>
-          Un traductor y editor en la palma de tumano
-        </Text>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Get Started</Text>
-        </TouchableOpacity>
-        <View style={styles.indicatorContainer}>
-          <View style={[styles.indicator, styles.activeIndicator]} />
-          <View style={styles.indicator} />
-          <View style={styles.indicator} />
+    <KeyboardAwareScrollView
+      contentContainerStyle={styles.scrollViewContainer}
+      resetScrollToCoords={{ x: 0, y: 0 }}
+      scrollEnabled={true}
+    >
+      <LinearGradient
+        colors={['#F1F1F1', '#E1ECE2']}
+        style={styles.background}
+      />
+      <View style={styles.container}>
+        <View style={styles.card}>
+          <View style={styles.imageContainer}>
+            <Image source={require('../assets/Enter.png')} style={styles.image} />
+          </View>
+          <TextInput
+            placeholder="Username"
+            style={styles.input}
+            value={username}
+            onChangeText={setUsername}
+          />
+          <TextInput
+            placeholder="Password"
+            secureTextEntry
+            style={styles.input}
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity
+            onPress={handleLogin}
+            style={styles.button}
+            disabled={isLoading}
+          >
+            <Text style={styles.buttonText}>
+              {isLoading ? 'Cargando...' : 'Login'}
+            </Text>
+          </TouchableOpacity>
+          <View style={styles.footer}>
+            <Text onPress={() => navigation.navigate('Mail')} style={styles.footerText}>
+              Forgot Password?
+            </Text>
+            <Text onPress={signup} style={styles.footerText}>
+              Sign Up
+            </Text>
+          </View>
         </View>
       </View>
-    </ScrollView>
-
-  )
+    </KeyboardAwareScrollView>
+  );
 }
- 
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    // backgroundColor: '#3B82F6',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-  },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 24,
-    alignItems: 'center',
-    width: '100%',
-    maxWidth: 350,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+  scrollViewContainer: {
+    flexGrow: 1,
   },
   imageContainer: {
     marginBottom: 20,
-    },
-    image: {
-      width: 350,
-      height: 300,
-      borderRadius: 50,
-    },  
-  title: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#1E3A8A',
-    marginBottom: 16,
-    textAlign: 'center',
   },
-  description: {
-    fontSize: 16,
-    color: '#1E3A8A',
-    marginBottom: 24,
-    paddingHorizontal: 64,
-    textAlign: 'center',
+  image: {
+    width: 350,
+    height: 300,
+    borderRadius: 50,
+  },
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center', // Centrar vertical y horizontalmente
+    backgroundColor: '#C4DCCF',
+  },
+  background: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    height: '100%',
+  },
+  card: {
+    width: '90%',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    elevation: 10,
+  },
+  input: {
+    width: '100%',
+    marginBottom: 15,
+    padding: 15,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 5,
   },
   button: {
-    backgroundColor: '#1E40AF',
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 25,
+    width: '100%',
+    padding: 15,
+    backgroundColor: '#607B73',
+    borderRadius: 5,
+    alignItems: 'center',
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
+    color: 'white',
+    fontWeight: 'bold',
   },
-  indicatorContainer: {
+  footer: {
+    marginTop: 15,
+    width: '100%',
     flexDirection: 'row',
-    marginTop: 16,
+    justifyContent: 'space-between',
   },
-  indicator: {
-    height: 6,
-    width: 6,
-    backgroundColor: '#fff',
-    borderRadius: 3,
-    marginHorizontal: 2,
-  },
-  activeIndicator: {
-    backgroundColor: '#1E40AF',
+  footerText: {
+    color: '#607B73',
+    fontWeight: 'bold',
   },
 });

@@ -13,7 +13,10 @@ import {
   Platform,
   Button
 } from 'react-native';
+import axios from 'axios';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import Modal from 'react-native-modal';
+import { string } from 'prop-types';
 
 export default function Registro() {
   const [fullName, setFullName] = useState('');
@@ -21,31 +24,61 @@ export default function Registro() {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [showDatePicker, setShowDatePicker] = useState(false);
-
+  const [showDatePicker, setShowDatePicker] = useState(false); 
   const navigation = useNavigation();
+  const emailRegex = /\S+@\S+\.\S+/;
+  const handleSignUp = async () => {
 
-  const handleSignUp = () => {
     // Validación del nombre completo
-    if (/\d/.test(fullName)) {
+     if (/\d/.test(fullName)) {
         Alert.alert('Error de Validación', 'El nombre no debe contener números.');
         return;
       }
   
       // Validación del email
-      const emailRegex = /\S+@\S+\.\S+/;
-      if (!emailRegex.test(email)) {
-        Alert.alert('Error de Validación', 'Por favor, introduce un correo electrónico válido.');
-        return;
+
+      else if (!emailRegex.test(email)) {
+      Alert.alert('Error de Validación', 'Por favor, introduce un correo electrónico válido.');
+      return;
       }
-  
+
       // Validación de la fecha de nacimiento
-      if (date > new Date()) {
+      else if (date > new Date()) {
         Alert.alert('Error de Validación', 'La fecha de nacimiento no puede ser en el futuro.');
         return;
       }
-  }; 
+      
+      else{
+    try{
+         response = await axios.post('https://us-central1-lingua-80a59.cloudfunctions.net/add_username', {
+          Name: fullName,
+          email: email,
+          username: username,
+          password: password,
+          birthdate: date.toISOString().split('T')[0]
+        }); 
+        if (response.data.includes('Data added successfully.')) {
+          
+          navigation.navigate('Success');
+        }
+        else {
+          if (response.data.includes('Email already exists'))
+          Alert.alert('Error','El correo ya existe');
+          else if (response.data.includes('Username already exists'))
+          Alert.alert('Error','El nombre de usuario ya existe');
 
+        }
+  
+       
+      }
+      catch (error) {
+        Alert.alert('Error', error.message);
+      }
+
+
+    }
+    };  
+     
  
   const [show, setShow] = useState(false); // Agrega esto
 
@@ -138,10 +171,10 @@ export default function Registro() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: '#FFF',
-    },
+      container: {
+        flex: 1,
+        backgroundColor: '#fff',
+      },
     linkText: {
         fontSize: 16,
         color: '#0000ff',
@@ -167,13 +200,13 @@ const styles = StyleSheet.create({
     card: {
       width: '90%',
       borderRadius: 20,
-      backgroundColor: '#f9f9f9',
+      backgroundColor: '#fff',
       alignItems: 'center',
       padding: 20,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 8,
+    //    shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.25,
+    // shadowRadius: 3.84,
       elevation: 3,
     },
     profileImage: {
