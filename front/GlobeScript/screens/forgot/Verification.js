@@ -7,6 +7,8 @@ import axios from 'axios';
 export default function Verification({ route }) {
   const [code, setCode] = useState(Array(6).fill(''));
   const [isLoading, setIsLoading] = useState(false);
+
+  const navigation = useNavigation();
   const inputRefs = useRef([]); 
   const { email } = route.params; // Obtener el correo electrónico del parámetro de ruta
 
@@ -40,6 +42,7 @@ export default function Verification({ route }) {
 
       if (response.data.status === 'success') {
         Alert.alert('Verification', 'Código verificado con éxito.');
+        navigation.navigate('Home');
       } else {
         Alert.alert('Error', response.data.message);
       }

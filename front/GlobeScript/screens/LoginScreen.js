@@ -49,6 +49,7 @@ export default function LoginScreen() {
       .then(response => {
         if (response.data.includes('True')) {
           Alert.alert('Success', 'Inicio de sesión exitoso');
+          navigation.navigate('Home');
         } else {
           Alert.alert('Error', 'Datos de inicio de sesión inválidos');
         }
