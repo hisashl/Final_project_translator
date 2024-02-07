@@ -2,49 +2,59 @@ import React, { useState } from 'react';
 import {
   Alert,
   View,
-  Image,
   KeyboardAvoidingView,
   Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  ScrollView
+  ScrollView,
+  ActivityIndicator
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native'; 
 
 export default function Mail() {
   const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
   const emailRegex = /\S+@\S+\.\S+/;
+
   const handleRecovery = async () => {
+    if (!email || !email.trim()) {
+      Alert.alert('Error de Validación', 'Por favor, introduce un correo electrónico.');
+      return;
+    }
     if (!emailRegex.test(email)) {
       Alert.alert('Error de Validación', 'Por favor, introduce un correo electrónico válido.');
       return;
     }
+
+    setIsLoading(true);
   
     try {
-       response = await axios.post('https://us-central1-lingua-80a59.cloudfunctions.net/verification', {
+      const response = await axios.post('https://us-central1-lingua-80a59.cloudfunctions.net/verification', {
         email: email,
       });
   
-      if (response.data.includes( 'sucess')) {
-        Alert.alert('Correo de recuperación enviado', 'Se han enviado instrucciones al correo electrónico para recuperar la contraseña.');
-        navigation.navigate('Verification');
+      if (response.data.status === 'success') {
+        // Navegar a Verification y pasar el correo electrónico como parámetro
+        navigation.navigate('Verification', { email: email });  
+      } else if (response.data.status === 'Error') {
+        Alert.alert('Error', response.data.message);
       } else {
         Alert.alert('Error', 'Error al enviar el correo de recuperación.');
       }
     } catch (error) {
       Alert.alert('Error', 'Error al realizar la solicitud: ' + error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
-  
 
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContainer}>
-      <KeyboardAvoidingView
-        
+      <KeyboardAvoidingView   
         style={styles.container}
       >
         <LinearGradient
@@ -52,7 +62,7 @@ export default function Mail() {
           style={styles.background}
         />
         <View style={styles.card}>
-          <Text style = {styles.linkText}>
+          <Text style={styles.linkText}>
             Correo de la cuenta
           </Text>
           <TextInput
@@ -63,7 +73,11 @@ export default function Mail() {
             onChangeText={setEmail}
           />
           <TouchableOpacity onPress={handleRecovery} style={styles.button}>
-            <Text style={styles.buttonText}>Continuar</Text>
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Text style={styles.buttonText}>Continuar</Text>
+            )}
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

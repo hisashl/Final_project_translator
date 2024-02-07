@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
@@ -30,6 +31,11 @@ export default function LoginScreen() {
 
   const handleLogin = useCallback(() => {
     if (isLoading) {
+      return;
+    }
+
+    if (!username || !password) { // Verifica si los campos de nombre de usuario y contraseña están vacíos
+      Alert.alert('Error de Validación', 'Por favor, completa todos los campos.');
       return;
     }
 
@@ -104,9 +110,13 @@ export default function LoginScreen() {
             style={styles.button}
             disabled={isLoading}
           >
-            <Text style={styles.buttonText}>
-              {isLoading ? 'Cargando...' : 'Login'}
-            </Text>
+            
+
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#FFFFFF" /> // Indicador de carga mientras se está procesando la solicitud
+            ) : (
+              <Text style={styles.buttonText}>Login</Text>
+            )}
           </TouchableOpacity>
           <View style={styles.footer}>
             <Text onPress={() => navigation.navigate('Mail')} style={styles.footerText}>

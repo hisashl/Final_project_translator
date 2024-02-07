@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import axios from 'axios';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -29,7 +30,12 @@ export default function Registro() {
 
   const handleSignUp = async () => {
     // Validaciones ...
+    if (!fullName || !email || !username || !password) {
+      Alert.alert('Error de Validación', 'Por favor, completa todos los campos.');
+      return;
+    }
 
+    
     setIsLoading(true); // Iniciar la carga
 
     try {
@@ -122,7 +128,14 @@ export default function Registro() {
             />
           )}
           <TouchableOpacity style={styles.button} onPress={handleSignUp} disabled={isLoading}>
-            <Text style={styles.buttonText}>{isLoading ? 'Cargando...' : 'Registrarse'}</Text>
+           
+          {isLoading ? (
+              <ActivityIndicator size="small" color="#FFFFFF" /> // Indicador de carga mientras se está procesando la solicitud
+            ) : (
+              <Text style={styles.buttonText}>Registrarse</Text>
+            )}
+
+
           </TouchableOpacity>
         </View>
       </ScrollView>

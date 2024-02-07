@@ -1,14 +1,53 @@
 import React, { useState, useRef } from 'react';
-import { Alert, Image, View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView } from 'react-native';
+import { Alert, Image, View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-export default function Verification() {
+import axios from 'axios';
+
+export default function Verification({ route }) {
   const [code, setCode] = useState(Array(6).fill(''));
+  const [isLoading, setIsLoading] = useState(false);
   const inputRefs = useRef([]); 
-  const handleVerify = () => {
-    // Aquí iría la lógica para manejar la verificación del código
-    Alert.alert('Verification', 'Código verificado con éxito.');
-   
+  const { email } = route.params; // Obtener el correo electrónico del parámetro de ruta
+
+  const handleVerify = async () => {
+    // Verifica si el código está ingresado correctamente
+    if (!code.join('').trim()) {
+      Alert.alert('Error de Validación', 'Por favor, introduce un código de verificación.');
+      return;
+    }
+
+    setIsLoading(true);
+
+    // Aquí se realizaría la solicitud para verificar el código de verificación
+
+    // Muestra el correo electrónico para verificar que se haya pasado correctamente
+    
+
+    try {
+      const response = await axios.post(
+        'https://us-central1-lingua-80a59.cloudfunctions.net/code',
+        JSON.stringify({
+          email: email,
+          verification_code: code.join(''), // Enviar el código de verificación ingresado por el usuario
+        }),
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (response.data.status === 'success') {
+        Alert.alert('Verification', 'Código verificado con éxito.');
+      } else {
+        Alert.alert('Error', response.data.message);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Error al realizar la solicitud: ' + error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (text, index) => {
@@ -16,7 +55,6 @@ export default function Verification() {
     newCode[index] = text;
     setCode(newCode);
 
-    // Move to next input if the text is not empty
     if (text && index < 5) {
       inputRefs.current[index + 1].focus();
     }
@@ -25,13 +63,13 @@ export default function Verification() {
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContainer}>
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
-        <LinearGradient  colors={['#F1F1F1', '#E1ECE2']}style={styles.background} />
+        <LinearGradient  colors={['#F1F1F1', '#E1ECE2']} style={styles.background} />
         <View style={styles.card}>
-        <View style={styles.imageContainer}>
+          <View style={styles.imageContainer}>
             <Image source={require('../../assets/ver.png')} style={styles.image} />
           </View>
-        <Text style = {styles.linkText}>
-            Ingresa el codigo que se le envio por correo
+          <Text style={styles.linkText}>
+            Ingresa el código que se le envió por correo
           </Text>
           <View style={styles.inputsContainer}>
             {code.map((digit, index) => (
@@ -47,7 +85,11 @@ export default function Verification() {
             ))}
           </View>
           <TouchableOpacity onPress={handleVerify} style={styles.button}>
-            <Text style={styles.buttonText}>Verificar</Text>
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Text style={styles.buttonText}>Verificar</Text>
+            )}
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -59,7 +101,7 @@ const styles = StyleSheet.create({
   scrollViewContainer: {
     flexGrow: 1,
   },
-   imageContainer: {
+  imageContainer: {
     marginBottom: 0,
   },
   image: {
@@ -67,7 +109,6 @@ const styles = StyleSheet.create({
     height: 300,
     borderRadius: 30,
   },
-  
   linkText: {
     fontSize: 20,
     color: '#607B73',
