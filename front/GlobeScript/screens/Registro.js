@@ -35,7 +35,6 @@ export default function Registro() {
       return;
     }
 
-    
     setIsLoading(true); // Iniciar la carga
 
     try {
@@ -51,6 +50,15 @@ export default function Registro() {
       );
 
       if (response.data.includes('Data added successfully.')) {
+        // Llamar a la función send_registration_email
+        await axios.post(
+          'https://us-central1-lingua-80a59.cloudfunctions.net/registration_email',
+          {
+            email: email,
+            full_name: fullName,
+            username: username,
+          }
+        );
         navigation.navigate('Success');
       } else {
         if (response.data.includes('Email already exists'))
@@ -128,14 +136,11 @@ export default function Registro() {
             />
           )}
           <TouchableOpacity style={styles.button} onPress={handleSignUp} disabled={isLoading}>
-           
-          {isLoading ? (
-              <ActivityIndicator size="small" color="#FFFFFF" /> // Indicador de carga mientras se está procesando la solicitud
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
               <Text style={styles.buttonText}>Registrarse</Text>
             )}
-
-
           </TouchableOpacity>
         </View>
       </ScrollView>

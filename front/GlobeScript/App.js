@@ -9,6 +9,7 @@ import Registro from './screens/Registro';
 import Mail from './screens/forgot/Mail';
 import Verification from './screens/forgot/Verification';
 import Success from './screens/TedamoslaBienvenida/Success';
+import NewPw from './screens/forgot/NewPw';
 const Stack = createNativeStackNavigator();
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
         <Stack.Screen options = {{headerShown: false}} name="Mail" component={Mail} />
         <Stack.Screen options = {{headerShown: false}} name="Verification" component={Verification} />
         <Stack.Screen options = {{headerShown: false}} name="Success" component={Success} />
+        <Stack.Screen options = {{headerShown: false}} name="NewPw" component={NewPw} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Alert, Image, View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
+import { useNavigation } from '@react-navigation/native'; 
 import axios from 'axios';
 
 export default function Verification({ route }) {
@@ -42,7 +43,7 @@ export default function Verification({ route }) {
 
       if (response.data.status === 'success') {
         Alert.alert('Verification', 'Código verificado con éxito.');
-        navigation.navigate('Home');
+        navigation.navigate('NewPw', { email: email });
       } else {
         Alert.alert('Error', response.data.message);
       }
@@ -54,7 +55,7 @@ export default function Verification({ route }) {
   };
 
   const handleChange = (text, index) => {
-    const newCode = [...code];
+    const newCode = [...code];  
     newCode[index] = text;
     setCode(newCode);
 
