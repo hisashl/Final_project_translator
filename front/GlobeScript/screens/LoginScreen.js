@@ -13,8 +13,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview';
-
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'; 
 export default function LoginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -53,7 +52,9 @@ export default function LoginScreen() {
         } else {
           Alert.alert('Error', 'Datos de inicio de sesión inválidos');
         }
+
       })
+      
       .catch(error => {
         if (error.response) {
           Alert.alert(

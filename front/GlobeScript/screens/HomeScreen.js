@@ -1,12 +1,111 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React from 'react';
+import { Image, StyleSheet, View } from 'react-native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import EditScreen from './EditScreen'; // Import your EditScreen component
+import TextScreen from './TextScreen'; // Import your TextScreen component
+import PhotoScreen from './PhotoScreen'; // Import your PhotoScreen component
+import MicrophoneScreen from './MicrophoneScreen'; // Import your MicrophoneScreen component
+
+const Tab = createBottomTabNavigator();
+
+const tabArr = [
+  {
+    route: 'Edit',
+    component: EditScreen,
+    icon: require('../assets/icons/edit_icon.png'), // Path to your edit icon
+  },
+  {
+    route: 'Text',
+    component: TextScreen,
+    icon: require('../assets/icons/text_icon.png'), // Path to your text icon
+  },
+  {
+    route: 'Photo',
+    component: PhotoScreen,
+    icon: require('../assets/icons/camera_icon.png'), // Path to your photo icon
+  },
+  {
+    route: 'Microphone',
+    component: MicrophoneScreen,
+    icon: require('../assets/icons/microphone_icon.png'), // Path to your microphone icon
+  },
+];
+
+// Define a function to create animated styles
+const createAnimatedStyles = (focused) => {
+  return useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: withSpring(focused ? 1.3 : 1) }],
+    };
+  });
+};
 
 export default function HomeScreen() {
   return (
-    <View>
-      <Text>Home Screen</Text>
-    </View>
-  )
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: styles.tabBar,
+        tabBarShowLabel: false,
+      }}
+    >
+      {tabArr.map((item, index) => (
+        <Tab.Screen
+          key={index}
+          name={item.route}
+          component={item.component}
+          options={{
+            tabBarIcon: ({ focused }) => {
+              const animatedStyles = createAnimatedStyles(focused);
+              return (
+                <View style={styles.iconContainer}>
+                  <Animated.View style={animatedStyles}>
+                    <Image
+                      source={item.icon}
+                      style={[styles.icon, focused ? styles.iconFocused : null]}
+                    />
+                  </Animated.View>
+                </View>
+              );
+            },
+          }}
+        />
+      ))}
+    </Tab.Navigator>
+  );
 }
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  
+  iconContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center', // Centrar vertical y horizontalmente
+    paddingTop: 20,
+  },
+
+  tabBar: {
+    height: 60,
+    position: 'absolute',
+    
+    bottom: 20,
+    right: 16,
+    left: 16,
+    borderRadius: 10,
+    backgroundColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 1,
+  },
+  icon: {
+    width: 30,
+    height: 40,
+    resizeMode: 'contain',
+  },
+  iconFocused: {
+    tintColor: '#007AFF', // Change the color when focused
+  },
+});

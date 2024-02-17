@@ -9,21 +9,36 @@ import Registro from './screens/Registro';
 import Mail from './screens/forgot/Mail';
 import Verification from './screens/forgot/Verification';
 import Success from './screens/TedamoslaBienvenida/Success';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import tabs from './screens/navigation/tabs';
 import NewPw from './screens/forgot/NewPw';
+import TextScreen from './screens/TextScreen';
+import PhotoScreen from './screens/PhotoScreen';   
+import MicrophoneScreen from './screens/MicrophoneScreen';
+import EditScreen from './screens/EditScreen';
 const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
 export default function App() {
   return (
-        <NavigationContainer>
+        <NavigationContainer> 
       <Stack.Navigator>
         <Stack.Screen   options={{ headerShown: false }}  name="Bienvenida" component={Bienvenida} />
         <Stack.Screen options = {{headerShown: false}} name="Login" component={LoginScreen} />
-        <Stack.Screen  name="Home" component={HomeScreen} /> 
+
+        <Stack.Screen options = {{headerShown: false}}  name="Home" component={HomeScreen} />  
+        
+        <Stack.Screen options = {{headerShown: false}} name="Texts"  component = {TextScreen}/>
+        <Stack.Screen options = {{headerShown: false}} name="Photo" component = {PhotoScreen}  />
+        <Stack.Screen options = {{headerShown: false}} name="Microphone" component = {MicrophoneScreen} /> 
+        <Stack.Screen options = {{headerShown: false}} name="Edit" component = {EditScreen} />
+        
         <Stack.Screen options = {{headerShown: false}} name="Registro" component={Registro} />
         <Stack.Screen options = {{headerShown: false}} name="Mail" component={Mail} />
         <Stack.Screen options = {{headerShown: false}} name="Verification" component={Verification} />
         <Stack.Screen options = {{headerShown: false}} name="Success" component={Success} />
-        <Stack.Screen options = {{headerShown: false}} name="NewPw" component={NewPw} />
-      </Stack.Navigator>
+        <Stack.Screen options = {{headerShown: false}} name="NewPw" component={NewPw} /> 
+       
+        </Stack.Navigator>
     </NavigationContainer>
   );
 }
