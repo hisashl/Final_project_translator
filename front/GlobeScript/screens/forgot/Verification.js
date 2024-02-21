@@ -63,6 +63,30 @@ export default function Verification({ route }) {
       inputRefs.current[index + 1].focus();
     }
   };
+  const resendCode = async () => {
+    try {
+      const response = await axios.post(
+        'https://us-central1-lingua-80a59.cloudfunctions.net/verification',
+        JSON.stringify({
+          email: email,
+        }),
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+  
+      if (response.data.status === 'success') {
+        Alert.alert('Verification', 'Código de verificación reenviado con éxito.');
+      } else {
+        Alert.alert('Error', response.data.message);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Error al reenviar el código de verificación: ' + error.message);
+    }
+  };
+  
 
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContainer}>
@@ -95,13 +119,27 @@ export default function Verification({ route }) {
               <Text style={styles.buttonText}>Verificar</Text>
             )}
           </TouchableOpacity>
+          <View style={styles.resendButtonContainer}>
+            <Text onPress={resendCode} style={styles.resendButtonText}>Volver a enviar código</Text>
+          </View>
         </View>
       </KeyboardAvoidingView>
     </ScrollView>
   );
+
 }
 
 const styles = StyleSheet.create({
+ 
+  resendButtonContainer: {
+    paddingTop: 20, // Agrega un padding superior a la View contenedora
+  },
+  resendButtonText: {
+    color: '#607B73',
+    fontWeight: 'bold',
+    textAlign: 'center', // Centra el texto
+  },
+  
   scrollViewContainer: {
     flexGrow: 1,
   },
@@ -163,6 +201,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: {
+    
     color: 'white',
     fontWeight: 'bold',
   },
