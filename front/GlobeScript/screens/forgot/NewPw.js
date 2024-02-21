@@ -10,6 +10,9 @@ import {
   ActivityIndicator,
   Alert
 } from 'react-native';
+
+import CryptoJS from 'react-native-crypto-js';
+ 
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
@@ -32,13 +35,24 @@ export default function NewPw({ route }) {
       Alert.alert('Error', 'Las contrasenas no concuerdan.');
       return;
     }
+     //    Validación de la contraseña
+   const passwordRegex = /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
+   if (!passwordRegex.test(newPassword)) {
+     Alert.alert('Error de Validación', 'La contraseña debe tener al menos 8 caracteres, una mayúscula y un número.');
+     return;
+   }
 
     setIsLoading(true);
 
     try {
+      const key = CryptoJS.enc.Utf8.parse('1234567890123456'); // Clave de 128 bits (16 caracteres)
+      let iv = CryptoJS.enc.Utf8.parse('1234567890123456'); // Vecto
+      let  encryptedPassword = CryptoJS.AES.encrypt(newPassword, key, { iv: iv }).toString();
+      // Recorta el encryptedUser a 25 caracteres
+      encryptedPassword = encryptedPassword.slice(0, 30);
       const response = await axios.post(
         'https://us-central1-lingua-80a59.cloudfunctions.net/update_password',
-        { email: email, new_password: newPassword }
+        { email: email, new_password: encryptedPassword }
       );
 
       if (response.data === 'Password updated successfully.') {

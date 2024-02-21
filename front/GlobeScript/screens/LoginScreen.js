@@ -14,6 +14,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'; 
+
+import CryptoJS from 'react-native-crypto-js';
 export default function LoginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -39,11 +41,15 @@ export default function LoginScreen() {
     }
 
     setIsLoading(true);
-
+  
+    const key = CryptoJS.enc.Utf8.parse('1234567890123456'); // Clave de 128 bits (16 caracteres)
+    const iv = CryptoJS.enc.Utf8.parse('1234567890123456'); // Vector de inicialización de 128 bits (16 caracteres)
+    const encryptedPassword = CryptoJS.AES.encrypt(password, key, { iv: iv }).toString();
+    const encryptedUser = CryptoJS.AES.encrypt(username, key, { iv: iv }).toString();
     axios
       .post('https://us-central1-lingua-80a59.cloudfunctions.net/login', {
-        username: username,
-        password: password,
+        username: encryptedUser,
+        password: encryptedPassword,
       })
       .then(response => {
         if (response.data.includes('True')) {
