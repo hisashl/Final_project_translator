@@ -80,7 +80,7 @@ export default function Verification({ route }) {
       if (response.data.status === 'success') {
         Alert.alert('Verification', 'Código de verificación reenviado con éxito.');
       } else {
-        Alert.alert('Error', response.data.message);
+        Alert.alert( response.data.message);
       }
     } catch (error) {
       Alert.alert('Error', 'Error al reenviar el código de verificación: ' + error.message);
@@ -131,9 +131,7 @@ export default function Verification({ route }) {
 
 const styles = StyleSheet.create({
  
-  resendButtonContainer: {
-    paddingTop: 20, // Agrega un padding superior a la View contenedora
-  },
+  
   resendButtonText: {
     color: '#607B73',
     fontWeight: 'bold',

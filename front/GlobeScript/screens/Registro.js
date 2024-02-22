@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect  } from '@react-navigation/native';
 import {
   Alert,
   ScrollView,
@@ -27,12 +27,31 @@ export default function Registro() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
+  const [confirmPassword, setConfirmPassword] = useState('');
   const emailRegex = /\S+@\S+\.\S+/;
-
+  useFocusEffect(
+    React.useCallback(() => {
+      setFullName('');
+      setEmail('');
+      setUsername('');
+      setPassword('');
+      setDate(new Date());
+      // ...restablecer otros estados si es necesario
+    }, [])
+  );
   const handleSignUp = async () => {
     // Validaciones ...
     if (!fullName || !email || !username || !password) {
       Alert.alert('Error de Validación', 'Por favor, completa todos los campos.');
+      return;
+    }
+    if (!emailRegex.test(email)) {
+
+      Alert.alert('Error de Validación', 'El correo electrónico no es válido.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      Alert.alert('Error de Validación', 'Las contraseñas no coinciden.');
       return;
     }
   //    Validación de la contraseña
@@ -41,7 +60,7 @@ export default function Registro() {
     Alert.alert('Error de Validación', 'La contraseña debe tener al menos 8 caracteres, una mayúscula y un número.');
     return;
   }
-
+ 
     setIsLoading(true); // Iniciar la carga
     const key = CryptoJS.enc.Utf8.parse('1234567890123456'); // Clave de 128 bits (16 caracteres)
     let iv = CryptoJS.enc.Utf8.parse('1234567890123456'); // Vector de inicialización de 128 bits (16 caracteres)
@@ -140,6 +159,13 @@ export default function Registro() {
             secureTextEntry
             onChangeText={setPassword}
           />
+          <TextInput
+             style={styles.input}
+             placeholder="Confirmar Contraseña"
+             value={confirmPassword}
+             secureTextEntry
+            onChangeText={setConfirmPassword}
+            />
           <TouchableOpacity onPress={showDatepicker} style={styles.datePickerButton}>
             <Text>Fecha de Nacimiento: {date.toLocaleDateString()}</Text>
           </TouchableOpacity>
