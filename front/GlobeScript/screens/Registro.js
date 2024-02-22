@@ -50,7 +50,7 @@ export default function Registro() {
     encryptedPassword = encryptedPassword.slice(0, 30);
 
 
-    const encryptedUser = CryptoJS.AES.encrypt(username, key, { iv: iv }).toString();
+    let encryptedUser = CryptoJS.AES.encrypt(username, key, { iv: iv }).toString();
     encryptedUser = encryptedUser.slice(0, 30);
    
     try {
