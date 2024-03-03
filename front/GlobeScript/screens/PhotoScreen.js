@@ -1,12 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react'; // Importa useEffect
-import { StyleSheet, View, Button, Image, Text, TextInput, Alert, Animated, Easing } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, SafeAreaView, Button, Image,Text, Alert, Animated, Easing } from 'react-native';
+import RNPickerSelect from 'react-native-picker-select';
+import { Ionicons } from '@expo/vector-icons';
+
+import languageOptions from '../lenguajes.json';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { Camera } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
 
 import {firebase} from '../config';
- 
 
 const imgDir = FileSystem.documentDirectory + '/images/';
 const ensureDirExist = async () => {
@@ -15,13 +18,61 @@ const ensureDirExist = async () => {
     await FileSystem.makeDirectoryAsync(imgDir, { intermediates: true });
   }
 }
-const PhotoScreen = () => {   
-  // Funciones existentes...
-  const [image, setImage] = useState(null);
-    // Estados y referencias existentes...
-   
-    
 
+const placeholder = {
+  label: 'idioma',
+  value: null,
+  color: '#9EA0A4',
+};
+
+
+const PhotoScreen = () => {
+  let transtext = "";
+
+  const [image, setImage] = useState(null);
+  const [imageVisible, setImageVisible] = useState(true);
+  const [sourceLanguage, setSourceLanguage] = useState();
+  const [targetLanguage, setTargetLanguage] = useState();
+  const [textToTranslate, setTextToTranslate] = useState('');
+  const [translatedText, setTranslatedText] = useState('');
+  
+const animateText = (text) => {
+  let animatedText = '';
+  let index = 0;
+
+  const intervalId = setInterval(() => {
+    animatedText += text[index];
+    setTextToTranslate(animatedText);
+    index++;
+
+    if (index === text.length) {
+      clearInterval(intervalId);
+    }
+  }, 50); // Ajusta la velocidad de la animación según sea necesario
+};
+const animatetranslated = (text) => {
+  let animatedText = '';
+  let index = 0;
+
+  const intervalId = setInterval(() => {
+    animatedText += text[index];
+    setTranslatedText(animatedText);
+    index++;
+
+    if (index === text.length) {
+      clearInterval(intervalId);
+    }
+  }, 50); // Ajusta la velocidad de la animación según sea necesario
+};
+
+const handleTranslation = async () => {
+  const translatedText = await translateText(transtext, 'es'); // Traducir al español, por ejemplo
+          if (translatedText) {
+              console.log('Translated text:', translatedText);
+             }   
+  animatetranslated(translatedText);
+   
+};
   useEffect(() => {
     const loadImages = async () => {
       await ensureDirExist();
@@ -31,6 +82,7 @@ const PhotoScreen = () => {
       }
     };
     loadImages();
+    
   }, []);
  
   const pickImageFromGallery = async () => {
@@ -44,12 +96,78 @@ const PhotoScreen = () => {
     if (!result.cancelled) {
       saveImage(result.assets[0].uri);
       console.log('Image URI from gallery:', result.assets[0].uri);
+      animateText("cargando texto...");
+    }
+  };
+  
+  const selectFileFromFiles = async () => {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: 'image/*', // Para seleccionar solo imágenes
+      copyToCacheDirectory: true, // Copia el archivo seleccionado al directorio de caché de la aplicación
+    });
+
+    if (!result.cancelled) {
+      saveImage(result.assets[0].uri);
+      console.log('Image URI from files:', result.assets[0].uri);
+      animateText("cargando texto...");
+    }
+  };
+
+  const takePhotoWithCamera = async () => {
+    const cameraPermission = await Camera.requestCameraPermissionsAsync();
+    const cameraRollPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  
+    if (cameraPermission.status === 'granted' && cameraRollPermission.status === 'granted') {
+       result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      }); 
+  
+      if (!result.cancelled) { 
+        saveImage(result.assets[0].uri);
+        console.log('Image URI from camera:', result.assets[0].uri);
+        animateText("cargando texto...");
+      }
+    } else {
+      Alert.alert('Permissions required', 'Camera and media library permissions are required to take photos');
     }
   };
   
 
-    
   
+  const translateText = async (text, targetLanguage = 'en') => {
+    try {
+      const translateApiUrl = 'https://translation.googleapis.com/language/translate/v2';
+      const translateApiKey = 'AIzaSyCKwODEaYC4H8aB8maNH537gEWHjmQftAY'; // Reemplaza con tu clave de API de Google Translate
+  
+      const translateRequestBody = JSON.stringify({
+        q: text,
+        target: targetLanguage,
+      });
+  
+      const translateResponse = await fetch(`${translateApiUrl}?key=${translateApiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: translateRequestBody,
+      });
+  
+      if (translateResponse.ok) {
+        const translateData = await translateResponse.json();
+        const translatedText = translateData.data.translations[0].translatedText;
+        console.log('Translated text:', translatedText);
+        return translatedText;
+      } else {
+        console.error('Translation error:', translateResponse.status, await translateResponse.text());
+        return null;
+      }
+    } catch (error) {
+      console.error('Translation error:', error);
+      return null;
+    }
+  };
+  
+
 
   const saveImage = async (uri) => {
     // Asegurarse de que el directorio existe
@@ -116,8 +234,12 @@ const PhotoScreen = () => {
             if (textAnnotations && textAnnotations.length > 0) {
               const detectedText = textAnnotations[0].description;
               console.log('Detected text:', detectedText);
-                         
+              transtext = detectedText;
+                // Animar el texto detectado
+               animateText(detectedText);
+              
             
+              
             } else {
               console.log('No text found in image.');
                
@@ -130,84 +252,194 @@ const PhotoScreen = () => {
         }
       }
     );
-  };
-   
 
-  const takePhotoWithCamera = async () => {
-    const cameraPermission = await Camera.requestCameraPermissionsAsync();
-    const cameraRollPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  
-    if (cameraPermission.status === 'granted' && cameraRollPermission.status === 'granted') {
-       result = await ImagePicker.launchCameraAsync({
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      }); 
-  
-      if (!result.cancelled) { 
-        saveImage(result.assets[0].uri);
-        console.log('Image URI from camera:', result.assets[0].uri);
-      }
-    } else {
-      Alert.alert('Permissions required', 'Camera and media library permissions are required to take photos');
-    }
+
   };
   
-  const selectFileFromFiles = async () => {
-    const result = await DocumentPicker.getDocumentAsync({
-      type: 'image/*', // Para seleccionar solo imágenes
-      copyToCacheDirectory: true, // Copia el archivo seleccionado al directorio de caché de la aplicación
-    });
 
-    if (!result.cancelled) {
-      saveImage(result.assets[0].uri);
-      console.log('Image URI from files:', result.assets[0].uri);
-    }
+
+  const handleImagePress = () => {
+    setImageVisible(false);
+    
   };
 
-  
-  
   return (
-      <View style={styles.container}>
-      <Button title="Select from Gallery" onPress={pickImageFromGallery} />
-      <Button title="Take a Photo" onPress={takePhotoWithCamera} />
-      <Button title="Select from Files" onPress={selectFileFromFiles} />
-      {image && (
-        <Animated.Image
-          source={{ uri: image }}
-           
-        />
-      )}
- 
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
+        <ScrollView contentContainerStyle={styles.scrollViewContent}>
+          <View style={styles.navBar}>
+            <Text style={styles.navTitle}>Traducir</Text>
+            <Ionicons name="settings-outline" size={24} color="black" />
+          </View>
+
+          <View style={styles.footerMenu}>
+            <Ionicons name="images-outline" size={24} color="gray" onPress={pickImageFromGallery}/>
+            <Ionicons name="camera" size={24} color="gray"  onPress={takePhotoWithCamera} />
+            <Ionicons name="folder-outline" size={24} color="gray" onPress={selectFileFromFiles} />
+            <Ionicons name="heart" size={24} color="gray" />
+          </View>
+
+          <View style={styles.mainContainer}>
+          {image && imageVisible && (
+              <TouchableOpacity onPress={handleImagePress}>
+                <Image source={{ uri: image }} style={styles.image} />
+              </TouchableOpacity>
+            )}
+            <View style={styles.languageSelectorsContainer}>
+              <RNPickerSelect
+                placeholder={placeholder}
+                items={languageOptions.map(lang => ({ label: lang.name, value: lang.code }))}
+                onValueChange={(value) => setSourceLanguage(value)}
+                style={pickerSelectStyles}
+                value={sourceLanguage}
+                useNativeAndroidPickerStyle={false}
+              />
+              <View style={styles.arrowIconContainer}>
+                <Ionicons name="arrow-forward" size={24} color="#61a5ff" />
+              </View>
+              <RNPickerSelect
+                placeholder={placeholder}
+                items={languageOptions.map(lang => ({ label: lang.name, value: lang.code }))}
+                onValueChange={(value) => setTargetLanguage(value)}
+                style={pickerSelectStyles}
+                value={targetLanguage}
+                useNativeAndroidPickerStyle={false}
+              />
+            
+            </View>
+            
+            <TextInput
+              style={styles.textInput}
+              onChangeText={setTextToTranslate}
+              value={textToTranslate}
+              placeholder="Introduce el texto aquí"
+              multiline
+            />
+
+            <TouchableOpacity style={styles.translateButton} onPress={handleTranslation}>
+              <Text style={styles.translateButtonText}>Traducir</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.translatedText}>{translatedText}</Text>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
+
+const pickerSelectStyles = {
+  inputIOS: {
+    fontSize: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderWidth: 2,
+    borderColor: '#61a5ff',
+    borderRadius: 10,
+    color: 'black',
+    paddingRight: 30,
+    backgroundColor: '#fff',
+    width: 130, 
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 0.5,
+    borderColor: 'gray',
+    borderRadius: 8,
+    color: 'black',
+    paddingRight: 30,
+    backgroundColor: '#fff',
+    width: 130, // Adjust the width as needed
+  },
+  iconContainer: {
+    top: 5,
+    right: 15,
+  },
+};
+
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  languageSelectorsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  arrowIconContainer: {
+    paddingHorizontal: 10, // Adjust the padding as needed
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  text: {
-    marginTop: 20,
-    fontWeight: 'bold',
-  },
-  input: {
-    width: '100%',
-    borderWidth: 1,
-    borderColor: 'gray',
-    padding: 10,
-    marginTop: 10,
-    marginBottom: 20,
-    minHeight: 50,
+    backgroundColor: '#fff',
   },
   image: {
-    width: 300,
-    height: 300,
-    marginTop: 20,
+    width: 350, // Ajusta el ancho según tus necesidades
+    height: 200, // Ajusta la altura según tus necesidades
+    marginBottom: 20,
+  },
+  navBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+  },
+  navTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+  },
+  footerMenu: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 16,
+    borderTopWidth: 1,
+    borderColor: '#ddd',
+  },
+  mainContainer: {
+    flex: 1,
+    paddingHorizontal: 20,
+    justifyContent: 'flex-start',
+    paddingTop: 20,
+  },
+  textInput: {
+    fontSize: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    marginBottom: 15,
+  },
+  translateButton: {
+    backgroundColor: '#1E90FF',
+    padding: 16,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  translateButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  translatedText: {
+    fontSize: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 10,
+    backgroundColor: '#f0f0f0',
   },
 });
-
 
 export default PhotoScreen;
