@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, SafeAreaView, Button, Image,Text, Alert, Animated, Easing } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, SafeAreaView, Button, Image,Text, Alert, Animated, Easing } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -27,8 +27,8 @@ const placeholder = {
 
 
 const PhotoScreen = () => {
-  let transtext = "";
-
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [heartColor, setHeartColor] = useState('#D3D3D3');
   const [image, setImage] = useState(null);
   const [imageVisible, setImageVisible] = useState(true);
   const [sourceLanguage, setSourceLanguage] = useState();
@@ -65,14 +65,7 @@ const animatetranslated = (text) => {
   }, 50); // Ajusta la velocidad de la animación según sea necesario
 };
 
-const handleTranslation = async () => {
-  const translatedText = await translateText(transtext, 'es'); // Traducir al español, por ejemplo
-          if (translatedText) {
-              console.log('Translated text:', translatedText);
-             }   
-  animatetranslated(translatedText);
-   
-};
+
   useEffect(() => {
     const loadImages = async () => {
       await ensureDirExist();
@@ -93,7 +86,8 @@ const handleTranslation = async () => {
       quality: 1,
     });
 
-    if (!result.cancelled) {
+    if  (result && !result.cancelled && result.assets && result.assets.length > 0)  {
+      setImageVisible(true);
       saveImage(result.assets[0].uri);
       console.log('Image URI from gallery:', result.assets[0].uri);
       animateText("cargando texto...");
@@ -106,7 +100,8 @@ const handleTranslation = async () => {
       copyToCacheDirectory: true, // Copia el archivo seleccionado al directorio de caché de la aplicación
     });
 
-    if (!result.cancelled) {
+    if  (result && !result.cancelled && result.assets && result.assets.length > 0)  {
+      setImageVisible(true);
       saveImage(result.assets[0].uri);
       console.log('Image URI from files:', result.assets[0].uri);
       animateText("cargando texto...");
@@ -124,7 +119,8 @@ const handleTranslation = async () => {
         quality: 1,
       }); 
   
-      if (!result.cancelled) { 
+      if  (result && !result.cancelled && result.assets && result.assets.length > 0)  { 
+        setImageVisible(true);
         saveImage(result.assets[0].uri);
         console.log('Image URI from camera:', result.assets[0].uri);
         animateText("cargando texto...");
@@ -136,7 +132,7 @@ const handleTranslation = async () => {
   
 
   
-  const translateText = async (text, targetLanguage = 'en') => {
+  const translateText = async (text, targetLanguage) => {
     try {
       const translateApiUrl = 'https://translation.googleapis.com/language/translate/v2';
       const translateApiKey = 'AIzaSyCKwODEaYC4H8aB8maNH537gEWHjmQftAY'; // Reemplaza con tu clave de API de Google Translate
@@ -198,6 +194,7 @@ const handleTranslation = async () => {
         // Manejar errores de carga
         console.error('Error al subir la imagen:', error);
         Alert.alert('Error', 'Error al subir la imagen: ' + error.message);
+        animateText(ErrorMessage);
       },
       async () => {
         // Obtener URL de la imagen subida
@@ -234,7 +231,7 @@ const handleTranslation = async () => {
             if (textAnnotations && textAnnotations.length > 0) {
               const detectedText = textAnnotations[0].description;
               console.log('Detected text:', detectedText);
-              transtext = detectedText;
+               
                 // Animar el texto detectado
                animateText(detectedText);
               
@@ -242,6 +239,8 @@ const handleTranslation = async () => {
               
             } else {
               console.log('No text found in image.');
+              Alert.alert('Error', 'No se detecto texto');
+              setTextToTranslate("    ")
                
             }
           } else {
@@ -254,6 +253,23 @@ const handleTranslation = async () => {
     );
 
 
+  };
+  //setTextToTranslate
+  const handleTranslation = async () => {
+    if (!sourceLanguage || !targetLanguage) {
+      Alert.alert('Error', 'Por favor, selecciona los idiomas de origen y destino.');
+      return;
+    }
+  
+    const translatedText = await translateText(textToTranslate, targetLanguage); // Usar el idioma de destino seleccionado por el usuario
+    if (translatedText) {
+      console.log('Translated text:', translatedText);
+      animatetranslated(translatedText);
+    }
+    
+  setIsTranslating(true); // Activa el estado de carga
+
+  
   };
   
 
@@ -276,7 +292,14 @@ const handleTranslation = async () => {
             <Ionicons name="images-outline" size={24} color="gray" onPress={pickImageFromGallery}/>
             <Ionicons name="camera" size={24} color="gray"  onPress={takePhotoWithCamera} />
             <Ionicons name="folder-outline" size={24} color="gray" onPress={selectFileFromFiles} />
-            <Ionicons name="heart" size={24} color="gray" />
+            <Ionicons
+  name="heart"
+  size={24}
+  color={heartColor}
+  onPress={() => setHeartColor(heartColor === '#D3D3D3' ? '#FF0000' : '#D3D3D3')}
+/>
+ 
+            {/* //#ADD8E6 */}
           </View>
 
           <View style={styles.mainContainer}>
@@ -284,7 +307,7 @@ const handleTranslation = async () => {
               <TouchableOpacity onPress={handleImagePress}>
                 <Image source={{ uri: image }} style={styles.image} />
               </TouchableOpacity>
-            )}
+            )} 
             <View style={styles.languageSelectorsContainer}>
               <RNPickerSelect
                 placeholder={placeholder}
@@ -316,8 +339,13 @@ const handleTranslation = async () => {
               multiline
             />
 
-            <TouchableOpacity style={styles.translateButton} onPress={handleTranslation}>
-              <Text style={styles.translateButtonText}>Traducir</Text>
+            <TouchableOpacity style={styles.translateButton} onPress={handleTranslation}  disabled={isTranslating}>
+              {/* <Text style={styles.translateButtonText}>Traducir</Text> */}
+              {isTranslating ? (
+    <ActivityIndicator size="small" color="#fff" />
+  ) : (
+    <Ionicons name="language" size={24} color="white" />
+  )}
             </TouchableOpacity>
 
             <Text style={styles.translatedText}>{translatedText}</Text>
