@@ -72,6 +72,8 @@ const animateText = (text) => {
 
     if (index === text.length) {
       clearInterval(intervalId);
+      setIsTranslating(false); // Desactiva el estado de carga una vez que la animación haya terminado
+    
     }
   }, 50); // Ajusta la velocidad de la animación según sea necesario
 };
@@ -323,7 +325,7 @@ const animatetranslated = (text) => {
       console.log('Translated text:', translatedText);
       animatetranslated(translatedText);
     }
-    setIsTranslating(false);
+  
    // Activa el estado de carga
 
   
