@@ -2,11 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, ActivityIndicator, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, SafeAreaView, Button, Image,Text, Alert, Animated, Easing } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import { Ionicons } from '@expo/vector-icons';
-
+import CheckBox from '@react-native-community/checkbox';
 import languageOptions from '../lenguajes.json';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
-import { Camera } from 'expo-camera';
+import { Camera, FlashMode } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
 
 import {firebase} from '../config';
@@ -27,14 +27,39 @@ const placeholder = {
 
 
 const PhotoScreen = () => {
+  const [showWarning, setShowWarning] = useState(true);
+const [dontShowAgain, setDontShowAgain] = useState(false);
+
   const [isTranslating, setIsTranslating] = useState(false);
   const [heartColor, setHeartColor] = useState('#D3D3D3');
   const [image, setImage] = useState(null);
-  const [imageVisible, setImageVisible] = useState(true);
+  const [imageVisible, setImageVisible] = useState(false);
   const [sourceLanguage, setSourceLanguage] = useState();
   const [targetLanguage, setTargetLanguage] = useState();
   const [textToTranslate, setTextToTranslate] = useState('');
   const [translatedText, setTranslatedText] = useState('');
+  const MAX_SIZE = 30 * 1024 * 1024; // 30MB en bytes
+  const showTranslationWarning = () => {
+    if (showWarning && !dontShowAgain) {
+      Alert.alert(
+        'Advertencia',
+        'Si la imagen no cumple con los requisitos de texto continuo, el resultado se puede ver afectado.',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'No volver a mostrar',
+            onPress: () => {
+              setShowWarning(false); // No mostrar la advertencia en futuras traducciones
+             
+            },
+          },
+        ],
+        { cancelable: false }
+      );
+      return; // Detén la ejecución de la función aquí
+    }
+  };
+  
   
 const animateText = (text) => {
   let animatedText = '';
@@ -79,6 +104,10 @@ const animatetranslated = (text) => {
   }, []);
  
   const pickImageFromGallery = async () => {
+    if (showWarning && !dontShowAgain) {
+      showTranslationWarning();
+      return;
+    }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -86,7 +115,12 @@ const animatetranslated = (text) => {
       quality: 1,
     });
 
+     
     if  (result && !result.cancelled && result.assets && result.assets.length > 0)  {
+      if (!result.cancelled && result.assets[0].size > MAX_SIZE) {
+        Alert.alert('Error', 'La imagen excede el límite de 30MB.');
+        return;
+      }
       setImageVisible(true);
       saveImage(result.assets[0].uri);
       console.log('Image URI from gallery:', result.assets[0].uri);
@@ -95,12 +129,23 @@ const animatetranslated = (text) => {
   };
   
   const selectFileFromFiles = async () => {
+    if (showWarning && !dontShowAgain) {
+      showTranslationWarning();
+      return;
+    }
     const result = await DocumentPicker.getDocumentAsync({
       type: 'image/*', // Para seleccionar solo imágenes
       copyToCacheDirectory: true, // Copia el archivo seleccionado al directorio de caché de la aplicación
     });
+    
+  
+
 
     if  (result && !result.cancelled && result.assets && result.assets.length > 0)  {
+      if (!result.cancelled && result.assets[0].size > MAX_SIZE) {
+        Alert.alert('Error', 'La imagen excede el límite de 30MB.');
+        return;
+      }
       setImageVisible(true);
       saveImage(result.assets[0].uri);
       console.log('Image URI from files:', result.assets[0].uri);
@@ -109,6 +154,10 @@ const animatetranslated = (text) => {
   };
 
   const takePhotoWithCamera = async () => {
+    if (showWarning && !dontShowAgain) {
+      showTranslationWarning();
+      return;
+    }
     const cameraPermission = await Camera.requestCameraPermissionsAsync();
     const cameraRollPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
   
@@ -118,8 +167,14 @@ const animatetranslated = (text) => {
         aspect: [4, 3],
         quality: 1,
       }); 
+      
   
+
       if  (result && !result.cancelled && result.assets && result.assets.length > 0)  { 
+        if (!result.cancelled && result.assets[0].size > MAX_SIZE) {
+          Alert.alert('Error', 'La imagen excede el límite de 30MB.');
+          return;
+        }
         setImageVisible(true);
         saveImage(result.assets[0].uri);
         console.log('Image URI from camera:', result.assets[0].uri);
@@ -256,18 +311,20 @@ const animatetranslated = (text) => {
   };
   //setTextToTranslate
   const handleTranslation = async () => {
+    
+    
     if (!sourceLanguage || !targetLanguage) {
       Alert.alert('Error', 'Por favor, selecciona los idiomas de origen y destino.');
       return;
     }
-  
+    setIsTranslating(true);
     const translatedText = await translateText(textToTranslate, targetLanguage); // Usar el idioma de destino seleccionado por el usuario
     if (translatedText) {
       console.log('Translated text:', translatedText);
       animatetranslated(translatedText);
     }
-    
-  setIsTranslating(true); // Activa el estado de carga
+    setIsTranslating(false);
+   // Activa el estado de carga
 
   
   };
@@ -287,7 +344,7 @@ const animatetranslated = (text) => {
             <Text style={styles.navTitle}>Traducir</Text>
             <Ionicons name="settings-outline" size={24} color="black" />
           </View>
-
+        
           <View style={styles.footerMenu}>
             <Ionicons name="images-outline" size={24} color="gray" onPress={pickImageFromGallery}/>
             <Ionicons name="camera" size={24} color="gray"  onPress={takePhotoWithCamera} />
@@ -301,7 +358,7 @@ const animatetranslated = (text) => {
  
             {/* //#ADD8E6 */}
           </View>
-
+          
           <View style={styles.mainContainer}>
           {image && imageVisible && (
               <TouchableOpacity onPress={handleImagePress}>
@@ -388,6 +445,18 @@ const pickerSelectStyles = {
 };
 
 const styles = StyleSheet.create({
+  warningContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  checkbox: {
+    marginRight: 10,
+  },
+  warningText: {
+    fontSize: 14,
+    color: 'red',
+  },
   safeArea: {
     flex: 1,
     backgroundColor: '#fff',

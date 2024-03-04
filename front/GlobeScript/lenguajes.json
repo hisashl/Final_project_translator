@@ -1,4 +1,7 @@
 [
+  
+    { "name": "Español", "code": "es" },
+    { "name": "Ingles", "code": "en" },
     { "name": "Afrikaans", "code": "af" },
     { "name": "Albanian", "code": "sq" },
     { "name": "Amharic", "code": "am" },
@@ -25,7 +28,6 @@
     { "name": "Dhivehi", "code": "dv" },
     { "name": "Dogri", "code": "doi" },
     { "name": "Dutch", "code": "nl" },
-    { "name": "English", "code": "en" },
     { "name": "Esperanto", "code": "eo" },
     { "name": "Estonian", "code": "et" },
     { "name": "Ewe", "code": "ee" },
@@ -108,7 +110,6 @@
     { "name": "Slovak", "code": "sk" },
     { "name": "Slovenian", "code": "sl" },
     { "name": "Somali", "code": "so" },
-    { "name": "Spanish", "code": "es" },
     { "name": "Sundanese", "code": "su" },
     { "name": "Swahili", "code": "sw" },
     { "name": "Swedish", "code": "sv" },
