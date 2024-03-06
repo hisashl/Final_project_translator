@@ -28,8 +28,7 @@ const placeholder = {
 
 const PhotoScreen = () => {
   const [showWarning, setShowWarning] = useState(true);
-const [dontShowAgain, setDontShowAgain] = useState(false);
-
+  const [dontShowAgain, setDontShowAgain] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [heartColor, setHeartColor] = useState('#D3D3D3');
   const [image, setImage] = useState(null);
@@ -38,7 +37,7 @@ const [dontShowAgain, setDontShowAgain] = useState(false);
   const [targetLanguage, setTargetLanguage] = useState();
   const [textToTranslate, setTextToTranslate] = useState('');
   const [translatedText, setTranslatedText] = useState('');
-  const MAX_SIZE = 30 * 1024 * 1024; // 30MB en bytes
+  const MAX_SIZE = 30 * 1024 * 1024; 
   const showTranslationWarning = () => {
     if (showWarning && !dontShowAgain) {
       Alert.alert(

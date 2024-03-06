@@ -1,0 +1,27 @@
+{
+  "name": "react-native-audio",
+  "version": "4.3.0",
+  "description": "React Native extension for recording audio",
+  "main": "index.js",
+  "author": "Joshua Sierles <joshua@diluvia.net> (https://github.com/jsierles)",
+  "files": [
+    "ios/AudioRecorderManager.m",
+    "ios/AudioRecorderManager.h",
+    "ios/RNAudio.xcodeproj",
+    "README.md",
+    "LICENSE",
+    "index.js",
+    "android/*",
+    "RNAudio.podspec"
+  ],
+  "keywords": [
+    "react-native",
+    "audio",
+    "record"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jsierles/react-native-audio.git"
+  },
+  "nativePackage": true
+}
