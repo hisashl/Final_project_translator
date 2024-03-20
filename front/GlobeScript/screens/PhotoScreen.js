@@ -9,6 +9,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import { Camera, FlashMode } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
 
+import { useNavigation } from '@react-navigation/native'; 
 import {firebase} from '../config';
 
 const imgDir = FileSystem.documentDirectory + '/images/';
@@ -26,7 +27,8 @@ const placeholder = {
 };
 
 
-const PhotoScreen = () => {
+const PhotoScreen = ({ route  }) => {
+  
   const [showWarning, setShowWarning] = useState(true);
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
@@ -37,6 +39,8 @@ const PhotoScreen = () => {
   const [targetLanguage, setTargetLanguage] = useState();
   const [textToTranslate, setTextToTranslate] = useState('');
   const [translatedText, setTranslatedText] = useState('');
+  const [searchWord, setSearchWord] = useState('');
+  
   const MAX_SIZE = 30 * 1024 * 1024; 
   const showTranslationWarning = () => {
     if (showWarning && !dontShowAgain) {
@@ -58,6 +62,25 @@ const PhotoScreen = () => {
       return; // Detén la ejecución de la función aquí
     }
   };
+  const highlightSearchWord = (text, word) => {
+    if (!word.trim()) return <Text>{text}</Text>;
+  
+    const parts = text.split(new RegExp(`(${word})`, 'gi'));
+    return (
+      <Text>
+        {parts.map((part, index) =>
+          part.toLowerCase() === word.toLowerCase() ? (
+            <Text key={index} style={styles.highlightedText}>
+              {part}
+            </Text>
+          ) : (
+            <Text key={index}>{part}</Text>
+          )
+        )}
+      </Text>
+    );
+  };
+  
   
   
 const animateText = (text) => {
@@ -94,18 +117,21 @@ const animatetranslated = (text) => {
 };
 
 
-  useEffect(() => {
-    const loadImages = async () => {
-      await ensureDirExist();
-      const files = await FileSystem.readDirectoryAsync(imgDir);
-      if (files.length > 0) {
-        setImage(files.map(f => imgDir + f)[0]); // Solo muestra la primera imagen
-      }
-    };
-    loadImages();
-    
-  }, []);
- 
+useEffect(() => {
+  // Carga de imágenes
+  const loadImages = async () => {
+    await ensureDirExist();
+    const files = await FileSystem.readDirectoryAsync(imgDir);
+    if (files.length > 0) {
+      setImage(files.map(f => imgDir + f)[0]); // Solo muestra la primera imagen
+    }
+  };
+  loadImages(); 
+  if (route.params?.data) {
+    animateText(route.params.data);
+   
+  }
+}, [route.params?.data]);
   const pickImageFromGallery = async () => {
     if (showWarning && !dontShowAgain) {
       showTranslationWarning();
@@ -362,13 +388,20 @@ const animatetranslated = (text) => {
  
             {/* //#ADD8E6 */}
           </View>
-          
+          <TextInput
+  style={styles.textInput}
+  onChangeText={setSearchWord}
+  value={searchWord}
+  placeholder="Buscar palabra"
+/>
+
           <View style={styles.mainContainer}>
           {image && imageVisible && (
               <TouchableOpacity onPress={handleImagePress}>
                 <Image source={{ uri: image }} style={styles.image} />
               </TouchableOpacity>
             )} 
+            
             <View style={styles.languageSelectorsContainer}>
               <RNPickerSelect
                 placeholder={placeholder}
@@ -409,7 +442,10 @@ const animatetranslated = (text) => {
   )}
             </TouchableOpacity>
 
-            <Text style={styles.translatedText}>{translatedText}</Text>
+            <Text style={styles.translatedText}>
+  {highlightSearchWord(translatedText, searchWord)}
+</Text>
+
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -454,6 +490,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
+  highlightedText: {
+    backgroundColor: 'yellow',
+  },
+  
   checkbox: {
     marginRight: 10,
   },
@@ -512,14 +552,14 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     paddingTop: 20,
   },
+  
   textInput: {
-    fontSize: 18,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 10,
-    backgroundColor: '#fff',
     marginBottom: 15,
+    borderRadius: 10,
+    padding: 16,
+    flex: 1,
+    backgroundColor: 'transparent',
+    fontSize: 18,
   },
   translateButton: {
     backgroundColor: '#1E90FF',

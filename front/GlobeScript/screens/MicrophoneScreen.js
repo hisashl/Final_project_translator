@@ -1,167 +1,566 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Button, Text } from 'react-native';
-import { Audio } from 'expo-av';
-import { firebase } from '../config'; // Make sure to import your Firebase configuration
+    import React, { useState, useEffect} from 'react';
+    import { Keyboard , TouchableWithoutFeedback , ActivityIndicator, StyleSheet, View, Alert,  Button, Text, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+    import { Audio } from 'expo-av';
+    import { firebase } from '../config'; // Make sure to import your Firebase configuration
+    import { Ionicons, FontAwesome5  } from '@expo/vector-icons';
+    import RNPickerSelect from 'react-native-picker-select';
+    import languageOptions from '../lenguajes.json';
+    
+    import { useNavigation } from '@react-navigation/native'; 
+    const placeholder = {
+      label: 'idioma',
+      value: null,
+      color: '#9EA0A4',
+    };
+    
+    const MicrophoneScreen = () => {
+      const [recording, setRecording] = useState(null);
+      const [isRecording, setIsRecording] = useState(false);
+      const [sound, setSound] = useState(null);
+      const [message, setMessage] = useState("");
+      const [transcript, setTranscript] = useState("");
+      const [fileName, setFileName] = useState('');
+      const [recordTime, setRecordTime] = useState(0);
+      const [sourceLanguage, setSourceLanguage] = useState();
+      const [isPlaying, setIsPlaying] = useState(false);
+      const [audioUri, setAudioUri] = useState('');
+      const [isLoading, setIsLoading] = useState(false);
+      const [inputText, setInputText] = useState('');
 
-const MicrophoneScreen = () => {
-  const [recording, setRecording] = useState(null);
-  const [sound, setSound] = useState(null);
-  const [message, setMessage] = useState("");
-  const [transcript, setTranscript] = useState("");
+      const navigation = useNavigation();
+ 
+      useEffect(() => {
+        let interval;
+        if (isRecording) {
+          interval = setInterval(() => {
+            setRecordTime((prevRecordTime) => {
+              if (prevRecordTime < 60000) {
+                return prevRecordTime + 100; // Incrementa en 100 milisegundos
+              } else {
+                clearInterval(interval);
+                stopRecording(); // Detiene la grabación después de 60 segundos
+                return prevRecordTime;
+              }
+            });
+          }, 100);
+        } else {
+          // setRecordTime(0);
+        }
+        return () => clearInterval(interval);
+      }, [isRecording]);
 
-  async function startRecording() {
-    try {
-      const permission = await Audio.requestPermissionsAsync();
-      if (permission.status === 'granted') {
+
+      async function startRecording() {
+        try {
+          const permission = await Audio.requestPermissionsAsync();
+          if (permission.status === 'granted') {
+            await Audio.setAudioModeAsync({
+              allowsRecordingIOS: true,
+              playsInSilentModeIOS: true,
+              playThroughEarpieceAndroid: false,
+            });
+            const { recording } = await Audio.Recording.createAsync(
+              Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY
+            );
+            setRecording(recording);
+            setFileName('Grabando...');
+            setMessage('Grabando...');
+          } else {
+            setMessage('Se requieren permisos de grabación.');
+          }
+        } catch (err) {
+          console.error('Error al iniciar la grabación', err);
+          setMessage('Error al iniciar la grabación');
+        }
+        setIsRecording(true);
+        setRecordTime(0);
+      }
+
+      async function stopRecording() {
+        if (!recording) {
+          setMessage('No hay grabación en curso.');
+          return;
+        }
+        setMessage('Deteniendo grabación...');
+        setRecording(null);
+        await recording.stopAndUnloadAsync();
+        const uri = recording.getURI();
+        setAudioUri(uri);
+        setFileName("Audio Grabado...");
+        setMessage(`Grabación detenida. Archivo disponible en: ${uri}`);
+        loadSound(uri);
         await Audio.setAudioModeAsync({
-          allowsRecordingIOS: true,
+          allowsRecordingIOS: false,
           playsInSilentModeIOS: true,
           playThroughEarpieceAndroid: false,
         });
-        const { recording } = await Audio.Recording.createAsync(
-          Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY
-        );
-        setRecording(recording);
-        setMessage('Grabando...');
-      } else {
-        setMessage('Se requieren permisos de grabación.');
-      }
-    } catch (err) {
-      console.error('Error al iniciar la grabación', err);
-      setMessage('Error al iniciar la grabación');
-    }
-  }
+        setIsRecording(false);
+         
+    };
 
-  async function stopRecording() {
-    if (!recording) {
-      setMessage('No hay grabación en curso.');
+      const formatTime = ms => {
+        
+        const seconds = Math.floor((ms % 60000) / 1000);
+        const miliseconds = ((ms % 60000) % 1000) / 100;
+        return ` ${seconds < 10 ? '0' : ''}${seconds}:${Math.floor(miliseconds)}`;
+      };
+      
+      async function loadSound(uri) {
+        const { sound } = await Audio.Sound.createAsync(
+          { uri },
+          { shouldPlay: false }
+        );
+        setSound(sound);
+      }
+      async function playSound() {
+        if (sound) {
+          const status = await sound.getStatusAsync();
+          if (status.isPlaying) {
+            await sound.pauseAsync(); // This pauses the audio if it is playing
+            setIsPlaying(false);
+             setFileName("Audio listo para subir...")
+          } else {
+            setFileName("Reproduciendo...");
+            setMessage('Reproduciendo grabación...');
+            await sound.playAsync();
+            setIsPlaying(true);
+            sound.setOnPlaybackStatusUpdate((statusUpdate) => {
+              if (statusUpdate.didJustFinish) {
+                setMessage('Reproducción finalizada.');
+                setFileName("Audio listo para subir...");
+                setIsPlaying(false); // Reset to false when playback finishes
+                sound.setPositionAsync(0); // Reset the audio to the beginning for the next play
+              }
+            });
+           
+          }
+        }
+       
+      }
+      
+      
+      async function cancelRecording() {
+        setFileName("");
+        if (!recording && !sound) {
+          setMessage('No hay grabación o audio para cancelar.');
+          return;
+        }
+        if (recording) {
+          await recording.stopAndUnloadAsync();
+        }
+        if (sound) {
+          await sound.unloadAsync();
+        }
+        setRecording(null);
+        setSound(null);
+        setIsRecording(false);
+        setRecordTime(0);
+        setFileName('');
+        setAudioUri(''); // Reset the URI
+        setMessage('');
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          playsInSilentModeIOS: true,
+          playThroughEarpieceAndroid: false,
+        });
+        
+      }
+      const send = async () => {
+        if (!sourceLanguage || !audioUri) {
+          Alert.alert('Error', 'Por favor, completa la grabación y selecciona los idiomas de origen y destino.');
+          return;
+        }
+        setIsLoading(true);
+        await saveAudio();
+        setIsLoading(false);
+      };
+  async function saveAudio() {
+    if (!audioUri) {
+      setMessage('No hay audio para guardar.');
       return;
     }
-    setMessage('Deteniendo grabación...');
-    setRecording(null);
-    await recording.stopAndUnloadAsync();
-    const uri = recording.getURI();
-    setMessage(`Grabación detenida. Archivo disponible en: ${uri}`);
-    loadSound(uri);
-    await Audio.setAudioModeAsync({
-      allowsRecordingIOS: false,
-      playsInSilentModeIOS: true,
-      playThroughEarpieceAndroid: false,
-    });
-    saveAudio(uri);
-  }
-
-  async function loadSound(uri) {
-    const { sound } = await Audio.Sound.createAsync(
-      { uri },
-      { shouldPlay: false }
-    );
-    setSound(sound);
-  }
-
-  async function playSound() {
-    setMessage('Reproduciendo grabación...');
-    await sound?.playAsync();
-    sound.setOnPlaybackStatusUpdate((status) => {
-      if (status.didJustFinish) {
-        setMessage('Reproducción finalizada.');
-        sound.unloadAsync();
-      }
-    });
-  }
-
-  async function saveAudio(uri) {
+    setIsLoading(true); // Inicia el indicador de carga
+    let sendinfo;
     try {
-      const response = await fetch(uri);
+      const response = await fetch(audioUri);
       const blob = await response.blob();
-      const filename = `${new Date().getTime()}.wav`;
-      const storageRef = firebase.storage().ref().child(`audios/${filename}`);
-      const uploadTask = storageRef.put(blob);
-
-      uploadTask.on(
-        'state_changed',
-        (snapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log('Upload is ' + progress + '% done');
-        },
-        (error) => {
-          console.error('Error al subir el audio:', error);
-          Alert.alert('Error', 'Error al subir el audio: ' + error.message);
-        },
-        async () => {
-          const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-          console.log('File available at', downloadURL);
-          transcribeAudio(downloadURL);
+      const formData = new FormData();
+      formData.append('file', {
+        uri: audioUri,
+        type: 'audio/mp3',
+        name: 'speech2text.mp3',
+      });
+      const postResponse = await fetch('https://us-central1-lingua-80a59.cloudfunctions.net/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const responseData = await postResponse.json(); // Modificación aquí para manejar la respuesta como texto
+      sendinfo = "gs://lingua_bucket/"+responseData.filename;
+      setFileName(responseData.filename);
+      console.log('Response:', sendinfo);
+      console.log('Lang:', sourceLanguage);
+      if (postResponse.status === 200) {
+        try {
+          const info = JSON.stringify({
+            gcs_uri: sendinfo, // Utilizar la URL del archivo subido como GCS URI
+            language_code: sourceLanguage
+          });
+          const response = await fetch('https://us-central1-lingua-80a59.cloudfunctions.net/audio', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: info  
+          });
+          const data = await response.json();
+          console.log('Transcription:', data.transcription);
+          setInputText(prevText => prevText + (prevText ? ' ' : '') + data.transcription);
+        } catch (error) {
+          console.error('Error en trans:', error);
         }
-      );
+      } else {
+        console.error('Error:', postResponse.statusText);
+        setMessage('Error al procesar el audio.');
+      }
     } catch (error) {
-      console.error('Error al guardar el audio:', error);
+      console.error('Error:', error);
+      setMessage('Error al procesar el audio.');
+    } finally {
+      setIsLoading(false); // Finaliza el indicador de carga
     }
   }
-//AIzaSyBgmTL8HS7kfL07oM8AD7EO29jXAyW3OEQ 
-async function transcribeAudio(gcsUri) {
-  try {
-    const apiUrl = 'https://speech.googleapis.com/v1/speech:recognize';
-    const apiKey = 'AIzaSyBgmTL8HS7kfL07oM8AD7EO29jXAyW3OEQ'; // Reemplaza con tu clave de API de Google Cloud
+  const handleLanguageIconPress = () => {
+   
+    navigation.navigate('Photo', { data: inputText });
+  };
+  
+  
+      return (
+        <SafeAreaView style={styles.safeArea}>
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <ScrollView contentContainerStyle={styles.scrollViewContent}>
+              <View style={styles.navBar}>
+                <Text style={styles.navTitle}>Audio</Text>
+                <TouchableOpacity
+  style={styles.controlButton}
+  onPress={send}
+  disabled={ !sound || !sourceLanguage || !audioUri || isLoading}
+>
+  {isLoading ? (
+    <ActivityIndicator size="small" color="#000" />
+  ) : (
+    <Ionicons name="send" size={24} color={sound && sourceLanguage && audioUri ? "#43A2BE" : "gray"} />
+  )}
+</TouchableOpacity>
 
-    const requestBody = JSON.stringify({
-      audio: {
-        uri: gcsUri, // Asegúrate de que sea la ruta GCS del archivo de audio
-      },
-      config: {
-        encoding: 'LINEAR16',
-        languageCode: 'es-ES', // Cambia al idioma de tu audio
-        sampleRateHertz: 44100,
-      },
-    });
+              </View>
+            
+              <View style={styles.footerMenu}>
+                  {/* Cancel Button */}
+        <TouchableOpacity style={styles.controlButton} onPress={cancelRecording}>
+           <Ionicons name="close" size={40} color="#000" />
+         </TouchableOpacity>
+         
+ {/* Recording/Pause Button */}
+ <TouchableOpacity style={styles.controlButton} onPress={recording ? stopRecording : startRecording}>
+    <Ionicons
+      name={isRecording ? 'mic' : 'mic-off'} // mic-off es un ícono comúnmente usado para cuando el micrófono está apagado
+      size={40}
+      color={isRecording ? 'red' : 'grey'} // Color rojo cuando está grabando, gris cuando no
+    />
+  </TouchableOpacity>
+  
+  
+     {/* Play/Pause Button */}
+     <TouchableOpacity style={styles.controlButton} onPress={playSound} disabled={!sound}>
+          <Ionicons
+            name={isPlaying ? "pause" : "play"}
+            size={40}
+            color={sound ? "#000" : "grey"}
+          />
+        </TouchableOpacity>
+ 
 
-    const response = await fetch(`${apiUrl}?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: requestBody,
-    });
 
-    if (response.ok) {
-      const data = await response.json();
-      const transcript = data.results
-        .map(result => result.alternatives[0].transcript)
-        .join('\n');
-      console.log('Transcript:', transcript);
-      setTranscript(transcript);
-      setMessage('Transcripción completada.');
-    } else {
-      console.error('Transcription error:', response.status, await response.text());
-      setMessage('Error en la transcripción.');
-    }
-  } catch (error) {
-    console.error('Transcription error:', error);
-    setMessage('Error en la transcripción.');
-  }
-}
-  return (
-    <View style={styles.container}>
-      <Button
-        title={recording ? 'Detener Grabación' : 'Iniciar Grabación'}
-        onPress={recording ? stopRecording : startRecording}
-      />
-      <Button
-        title="Reproducir Grabación"
-        onPress={playSound}
-        disabled={!sound}
-      />
-      <Text>{message}</Text>
-      {transcript ? <Text>Transcripción: {transcript}</Text> : null}
-    </View>
-  );
+
+
+           
+              
+            
+            </View>
+              <View style={styles.audioInfoContainer}>
+              <Text style={styles.timerText}>
+                {formatTime(recordTime)}
+              </Text>
+              <View style={styles.fileNameContainer}>
+                <Text style={styles.fileNameText}>{fileName}</Text>
+              </View>
+            </View>
+            <View style={styles.languageSelectorsContainer}>
+              <RNPickerSelect
+                placeholder={placeholder}
+                items={languageOptions.map(lang => ({ label: lang.name, value: lang.code }))}
+                onValueChange={(value) => setSourceLanguage(value)}
+                style={pickerSelectStyles}
+                value={sourceLanguage}
+                useNativeAndroidPickerStyle={false}
+              />
+               
+            
+            </View>
+            <View style={styles.textInputContainer}>
+            <TextInput
+  style={styles.textInput}
+  placeholder="Escribe algo aquí..."
+  value={inputText}
+  onChangeText={setInputText}
+  multiline={true} // Permite que el TextInput tenga múltiples líneas
+  numberOfLines={4} // Establece un número mínimo de líneas
+/>
+
+  <TouchableOpacity style={styles.languageButton} onPress={handleLanguageIconPress}>
+    <Ionicons name="language" size={24} color="#61a5ff" />
+  </TouchableOpacity>
+</View>
+
+            
+            </ScrollView>
+            </TouchableWithoutFeedback>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      );
+    };
+
+
+ 
+    
+const pickerSelectStyles = {
+
+  inputIOS: {
+    fontSize: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderWidth: 2,
+    borderColor: '#61a5ff',
+    borderRadius: 10,
+    color: 'black',
+    paddingRight: 30,
+    backgroundColor: '#fff',
+    width: 350, 
+    
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 0.5,
+    borderColor: 'gray',
+    borderRadius: 8,
+    color: 'black',
+    paddingRight: 30,
+    backgroundColor: '#fff',
+    width: 150, // Adjust the width as needed
+  },
+  iconContainer: {
+    top: 5,
+    right: 15,
+  },
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-});
+    const styles = StyleSheet.create({
+      textInputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        
+        borderRadius: 10,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        marginVertical: 10,
+      },
+ 
+      textInput: {
+        minHeight: 100, // Establece una altura mínima
+        maxHeight: 200, // Establece una altura máxima (opcional)
+        marginBottom: 15,
+        borderRadius: 10,
+        padding: 16,
+        flex: 1,
+        backgroundColor: 'transparent',
+        fontSize: 18,
+        textAlignVertical: 'top', // Alinea el texto en la parte superior
+      },
+      
+      languageButton: {
+        marginRight: 20,
+      },
+      
+      audioInfoContainer: {
+        padding: 20,
+        margin: 20,
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 10,
+        // backgroundColor: '#f9f9f9',
+        alignItems: 'center', // Alinea los elementos hijos verticalmente
+        justifyContent: 'center', // Centra los elementos hijos horizontalmente
+        shadowColor: '#000', // Sombra para iOS
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 4, // Sombra para Android
+      },
+      fileNameContainer: {
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+        marginVertical: 5,
+        borderRadius: 5,
+        // backgroundColor: '#e9e9e9', // Cambia este color como prefieras
+      },
+      fileNameText: {
+        
+        fontWeight: 'bold',
+        color: '#333', // Cambia este color como prefieras
+      },
+      timerText: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: 8,
+      },
+      
+      container: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#FFF',
+      },
+      navBar: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+      },
+      navTitle: {
+        fontSize: 22,
+        fontWeight: 'bold',
+      },
+      timerContainer: {
+        alignItems: 'center',
+        marginBottom: 20,
+      },
+      timerText: {
+        fontSize: 36,
+        fontWeight: 'bold',
+        marginVertical: 10,
+      },
+      audioText: {
+        color: 'grey',
+      },
+ 
+      reselectButton: {
+        marginTop: 10,
+      },
+      reselectButtonText: {
+        color: '#007AFF',
+      },
+      controlsContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingBottom: 30,
+      },
+      controlButton: {
+        marginHorizontal: 20,
+      },
+      warningContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 10,
+      },
+      highlightedText: {
+        backgroundColor: 'yellow',
+      },
+      
+      checkbox: {
+        marginRight: 10,
+      },
+      warningText: {
+        fontSize: 14,
+        color: 'red',
+      },
+      safeArea: {
+        flex: 1,
+        backgroundColor: '#fff',
+      },
+      languageSelectorsContainer: {
+        marginLeft: 20,
+        flexDirection: 'row',
+        // flexDirection: 'row',
+        // justifyContent: 'space-between',
+        // alignItems: 'center',
+        // marginBottom: 15,
+      },
+      arrowIconContainer: {
+        marginTop: 10,
+        paddingHorizontal: 10, // Adjust the padding as needed
+      },
+      // scrollViewContent: {
+      //   flexGrow: 1,
+      //   justifyContent: 'center',
+      //   paddingVertical: 20,
+      // },
+      container: {
+        flex: 1,
+        backgroundColor: '#fff',
+      },
+      image: {
+        width: 350, // Ajusta el ancho según tus necesidades
+        height: 200, // Ajusta la altura según tus necesidades
+        marginBottom: 20,
+      },
+    
+      navTitle: {
+        fontSize: 22,
+        fontWeight: 'bold',
+      },
+      footerMenu: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        padding: 16,
+        borderTopWidth: 1,
+        borderColor: '#ddd',
+      },
+      mainContainer: {
+        flex: 1,
+        paddingHorizontal: 20,
+        justifyContent: 'flex-start',
+        paddingTop: 20,
+      },
+     
+      translateButton: {
+        backgroundColor: '#1E90FF',
+        padding: 16,
+        borderRadius: 10,
+        alignItems: 'center',
+        marginBottom: 15,
+      },
+      translateButtonText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 16,
+      },
+      translatedText: {
+        fontSize: 18,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 10,
+        backgroundColor: '#f0f0f0',
+      },
+    });
+    
 
-export default MicrophoneScreen;
+    export default MicrophoneScreen;  
+    

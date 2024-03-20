@@ -15,6 +15,7 @@ import NewPw from './screens/forgot/NewPw';
 import TextScreen from './screens/TextScreen';
 import PhotoScreen from './screens/PhotoScreen';   
 import MicrophoneScreen from './screens/MicrophoneScreen';
+import Synonyms from './screens/synonyms';
 import EditScreen from './screens/EditScreen';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -24,7 +25,7 @@ export default function App() {
       <Stack.Navigator>
         {/* <Stack.Screen   options={{ headerShown: false }}  name="Bienvenida" component={Bienvenida} />
         <Stack.Screen options = {{headerShown: false}} name="Login" component={LoginScreen} /> */}
-
+        {/* <Stack.Screen name = "Synonyms" component={Synonyms} /> */}
         <Stack.Screen options = {{headerShown: false}}  name="Home" component={HomeScreen} />  
         
         <Stack.Screen options = {{headerShown: false}} name="Texts"  component = {TextScreen}/>
