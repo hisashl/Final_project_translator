@@ -1,17 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, ActivityIndicator, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, SafeAreaView, Button, Image,Text, Alert, Animated, Easing } from 'react-native';
+import { Modal, View, ActivityIndicator, StyleSheet, TextInput, TouchableOpacity,TouchableWithoutFeedback, KeyboardAvoidingView, Platform, ScrollView, SafeAreaView, Button, Image,Text, Alert, Animated, Easing } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import { Ionicons } from '@expo/vector-icons';
 import CheckBox from '@react-native-community/checkbox';
+import Highlighter from 'react-native-highlight-words';
 import languageOptions from '../lenguajes.json';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { Camera, FlashMode } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
-
+import { Menu, MenuOptions, MenuOption, MenuTrigger } from 'react-native-popup-menu';
 import { useNavigation } from '@react-navigation/native'; 
 import {firebase} from '../config';
-
+import styles from './parts/StyleP';
 const imgDir = FileSystem.documentDirectory + '/images/';
 const ensureDirExist = async () => {
   const dirInfo = await FileSystem.getInfoAsync(imgDir);
@@ -37,126 +38,15 @@ const PhotoScreen = ({ route  }) => {
   const [imageVisible, setImageVisible] = useState(false);
   const [sourceLanguage, setSourceLanguage] = useState();
   const [targetLanguage, setTargetLanguage] = useState();
-  const [textToTranslate, setTextToTranslate] = useState('');
+  const [textToTranslate, setTextToTranslate] = useState('Introduce algo');
   const [translatedText, setTranslatedText] = useState('');
-  const [searchWord, setSearchWord] = useState('');
-  
+  const [definition, setDefinition] = useState('');
+  const [synonyms, setSynonyms] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
   const MAX_SIZE = 30 * 1024 * 1024; 
-  const showTranslationWarning = () => {
-    if (showWarning && !dontShowAgain) {
-      Alert.alert(
-        'Advertencia',
-        'Si la imagen no cumple con los requisitos de texto continuo, el resultado se puede ver afectado.',
-        [
-          { text: 'Cancelar', style: 'cancel' },
-          {
-            text: 'No volver a mostrar',
-            onPress: () => {
-              setShowWarning(false); // No mostrar la advertencia en futuras traducciones
-             
-            },
-          },
-        ],
-        { cancelable: false }
-      );
-      return; // Detén la ejecución de la función aquí
-    }
-  };
-  const highlightSearchWord = (text, word) => {
-    if (!word.trim()) return <Text>{text}</Text>;
-  
-    const parts = text.split(new RegExp(`(${word})`, 'gi'));
-    return (
-      <Text>
-        {parts.map((part, index) =>
-          part.toLowerCase() === word.toLowerCase() ? (
-            <Text key={index} style={styles.highlightedText}>
-              {part}
-            </Text>
-          ) : (
-            <Text key={index}>{part}</Text>
-          )
-        )}
-      </Text>
-    );
-  };
-  
-  
-  
-const animateText = (text) => {
-  let animatedText = '';
-  let index = 0;
-
-  const intervalId = setInterval(() => {
-    animatedText += text[index];
-    setTextToTranslate(animatedText);
-    index++;
-
-    if (index === text.length) {
-      clearInterval(intervalId);
-      setIsTranslating(false); // Desactiva el estado de carga una vez que la animación haya terminado
-    
-    }
-  }, 50); // Ajusta la velocidad de la animación según sea necesario
-};
-const animatetranslated = (text) => {
-  let animatedText = '';
-  let index = 0;
-
-  const intervalId = setInterval(() => {
-    animatedText += text[index];
-    setTranslatedText(animatedText);
-    index++;
-
-    if (index === text.length) {
-      clearInterval(intervalId);
-      setIsTranslating(false); // Desactiva el estado de carga una vez que la animación haya terminado
-    
-    }
-  }, 50); // Ajusta la velocidad de la animación según sea necesario
-};
 
 
-useEffect(() => {
-  // Carga de imágenes
-  const loadImages = async () => {
-    await ensureDirExist();
-    const files = await FileSystem.readDirectoryAsync(imgDir);
-    if (files.length > 0) {
-      setImage(files.map(f => imgDir + f)[0]); // Solo muestra la primera imagen
-    }
-  };
-  loadImages(); 
-  if (route.params?.data) {
-    animateText(route.params.data);
-   
-  }
-}, [route.params?.data]);
-  const pickImageFromGallery = async () => {
-    if (showWarning && !dontShowAgain) {
-      showTranslationWarning();
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-     
-    if  (result && !result.cancelled && result.assets && result.assets.length > 0)  {
-      if (!result.cancelled && result.assets[0].size > MAX_SIZE) {
-        Alert.alert('Error', 'La imagen excede el límite de 30MB.');
-        return;
-      }
-      setImageVisible(true);
-      saveImage(result.assets[0].uri);
-      console.log('Image URI from gallery:', result.assets[0].uri);
-      animateText("cargando texto...");
-    }
-  };
-  
   const selectFileFromFiles = async () => {
     if (showWarning && !dontShowAgain) {
       showTranslationWarning();
@@ -248,7 +138,31 @@ useEffect(() => {
   };
   
 
+  const pickImageFromGallery = async () => {
+    if (showWarning && !dontShowAgain) {
+      showTranslationWarning();
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
 
+     
+    if  (result && !result.cancelled && result.assets && result.assets.length > 0)  {
+      if (!result.cancelled && result.assets[0].size > MAX_SIZE) {
+        Alert.alert('Error', 'La imagen excede el límite de 30MB.');
+        return;
+      }
+      setImageVisible(true);
+      saveImage(result.assets[0].uri);
+      console.log('Image URI from gallery:', result.assets[0].uri);
+      animateText("cargando texto...");
+    }
+  };
+  
   const saveImage = async (uri) => {
     // Asegurarse de que el directorio existe
     await ensureDirExist();
@@ -361,10 +275,228 @@ useEffect(() => {
   
 
 
+  useEffect(() => {
+    // Carga de imágenes
+    const loadImages = async () => {
+      await ensureDirExist();
+      const files = await FileSystem.readDirectoryAsync(imgDir);
+      if (files.length > 0) {
+        setImage(files.map(f => imgDir + f)[0]); // Solo muestra la primera imagen
+      }
+    };
+    loadImages(); 
+    if (route.params?.data) {
+      animateText(route.params.data);
+     
+    }
+  }, [route.params?.data]);
+    
+    
+
   const handleImagePress = () => {
     setImageVisible(false);
     
   };
+  const showTranslationWarning = () => {
+    if (showWarning && !dontShowAgain) {
+      Alert.alert(
+        'Advertencia',
+        'Si la imagen no cumple con los requisitos de texto continuo, el resultado se puede ver afectado.',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'No volver a mostrar',
+            onPress: () => {
+              setShowWarning(false); // No mostrar la advertencia en futuras traducciones
+             
+            },
+          },
+        ],
+        { cancelable: false }
+      );
+      return; // Detén la ejecución de la función aquí
+    }
+  };
+
+  
+  const animateText = (text) => {
+    let animatedText = '';
+    let index = 0;
+  
+    const intervalId = setInterval(() => {
+      animatedText += text[index];
+      setTextToTranslate(animatedText);
+      index++;
+  
+      if (index === text.length) {
+        clearInterval(intervalId);
+        setIsTranslating(false); // Desactiva el estado de carga una vez que la animación haya terminado
+      
+      }
+    }, 50); // Ajusta la velocidad de la animación según sea necesario
+  };
+  const animatetranslated = (text) => {
+    let animatedText = '';
+    let index = 0;
+  
+    const intervalId = setInterval(() => {
+      animatedText += text[index];
+      setTranslatedText(animatedText);
+      index++;
+  
+      if (index === text.length) {
+        clearInterval(intervalId);
+        setIsTranslating(false); // Desactiva el estado de carga una vez que la animación haya terminado
+      
+      }
+    }, 50); // Ajusta la velocidad de la animación según sea necesario
+  };
+
+  
+  const callCloudFunction = async (word) => {
+    try {
+     
+      const response = await fetch('https://us-central1-lingua-80a59.cloudfunctions.net/synonyms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ word: word }),
+      });
+      const data = await response.json();
+      console.log('Cloud function response:', data);
+      setDefinition(data.significados);
+      setSynonyms(data.sinonimos);
+    } catch (error) {
+      console.error('Error calling cloud function:', error);
+    }
+    setModalVisible(!modalVisible);
+  };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const [isEditing, setIsEditing] = useState(false);
+  
+  const [searchWord, setSearchWord] = useState('');
+
+  const [search, setSearch] = useState('');
+
+  const [searcht, setSearcht] = useState('');
+
+  const [found, setFound] = useState(true);
+
+  const handlePress = () => {
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    setIsEditing(false);
+  };
+ 
+
+  const getHighlightedText = (text, highlight) => {
+    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+    
+  
+    return (
+      <Text>
+        {parts.map((part, index) => 
+          part.toLowerCase() === highlight.toLowerCase() ?
+            <Text key={index} style={styles.highlightedText}>{part}</Text> :
+            <Text key={index}>{part}</Text>
+        )}
+      </Text>
+    );
+  };
+  const check = (text, highlight) => {
+    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+    const hasHighlight = parts.some((part) => part.toLowerCase() === highlight.toLowerCase());
+  
+    console.log(`Checking if "${highlight}" is in "${text}": ${hasHighlight}`);
+  
+    return hasHighlight;
+  };
+  
+ 
+  
+  const searchtrans = () => {
+    if (!sourceLanguage || !targetLanguage) {
+      Alert.alert('Error', 'Por favor, selecciona los idiomas de origen y destino.');
+      return;
+    }
+  }; 
+  const handleSearchInput = async () => {
+    const foundInOriginalText = check(textToTranslate, search);
+    if (foundInOriginalText ===  false){
+      Alert.alert('No se encontró ', `"${search}" no se encontró en el texto original.`);
+      return;
+    }
+    setSearchWord(search);
+    console.log(`Found in original text: ${foundInOriginalText}`);
+  
+    if (!sourceLanguage || !targetLanguage) {
+      Alert.alert('Error', 'Por favor, selecciona los idiomas de origen y destino.');
+      return;
+    }
+  
+    const translatedTextres = await translateText(search, targetLanguage);
+    console.log(`Translated text: ${translatedTextres}`);
+  
+    if (translatedTextres) {
+      const foundInTranslatedText = check(translatedText, translatedTextres);
+      console.log(`Found in translated text: ${foundInTranslatedText}`);
+  
+      if (!foundInTranslatedText) {
+        Alert.alert('No se encontró ', `"${translatedTextres}" no se encontró en el texto traducido.`);
+      } else {
+        setSearcht(translatedTextres);
+      }
+    }
+  };
+  
+  
+  const handleSearchTrans = async () => {
+    const foundInOriginalText = check(translatedText, search);
+     
+    if (foundInOriginalText ===  false){
+      Alert.alert('No se encontró ', `"${search}" no se encontró en el texto original.`);
+      return;
+    }
+    setSearcht(search);
+    setSearchWord(searcht);
+    searchtrans();
+    
+    if (!sourceLanguage || !targetLanguage) {
+      Alert.alert('Error', 'Por favor, selecciona los idiomas de origen y destino.');
+      return;
+    }
+  
+    const translatedWord = await translateText(search, sourceLanguage); // Traduce la palabra del idioma de destino al idioma de origen
+    console.log(`Translated word back to source language: ${translatedWord}`);
+  
+    if (translatedWord) {
+      const foundInOriginalText = check(textToTranslate, translatedWord); // Verifica si la palabra traducida inversa se encuentra en el texto original
+      console.log(`Found in original text: ${foundInOriginalText}`);
+  
+      if (!foundInOriginalText) {
+        Alert.alert('No se encontró la palabra', `La palabra "${translatedWord}" no se encontró en el texto original.`);
+      } else {
+        setSearchWord(translatedWord); // Subraya la palabra en el texto original
+      }
+    }
+  };
+  
+  
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -372,7 +504,7 @@ useEffect(() => {
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
           <View style={styles.navBar}>
             <Text style={styles.navTitle}>Traducir</Text>
-            <Ionicons name="settings-outline" size={24} color="black" />
+            <Ionicons name="search-outline" size={24} color="gray" onPress={() => setShowSearch(!showSearch)} />
           </View>
         
           <View style={styles.footerMenu}>
@@ -380,23 +512,33 @@ useEffect(() => {
             <Ionicons name="camera" size={24} color="gray"  onPress={takePhotoWithCamera} />
             <Ionicons name="folder-outline" size={24} color="gray" onPress={selectFileFromFiles} />
             <Ionicons
-  name="heart"
-  size={24}
-  color={heartColor}
-  onPress={() => setHeartColor(heartColor === '#D3D3D3' ? '#FF0000' : '#D3D3D3')}
-/>
- 
-            {/* //#ADD8E6 */}
+              name="heart"
+              size={24}
+              color={heartColor}
+              onPress={() => setHeartColor(heartColor === '#D3D3D3' ? '#FF0000' : '#D3D3D3')}
+            />
           </View>
-          <TextInput
-  style={styles.textInput}
-  onChangeText={setSearchWord}
-  value={searchWord}
-  placeholder="Buscar palabra"
-/>
+          
+          {showSearch && (
+            <View style={styles.searchContainer}>
+              <TextInput
+                style={styles.textInput}
+                onChangeText={setSearch}
+                value={search}
+                placeholder="Buscar palabra"
+              />
+             <Text style={styles.searchButton} onPress={handleSearchInput}>
+              Buscar input
+            </Text>
+            <Text style={styles.searchButton} onPress={handleSearchTrans}>
+              Buscar trans
+            </Text>
+            </View>
+          )}
 
+  
           <View style={styles.mainContainer}>
-          {image && imageVisible && (
+            {image && imageVisible && (
               <TouchableOpacity onPress={handleImagePress}>
                 <Image source={{ uri: image }} style={styles.image} />
               </TouchableOpacity>
@@ -422,38 +564,97 @@ useEffect(() => {
                 value={targetLanguage}
                 useNativeAndroidPickerStyle={false}
               />
-            
             </View>
             
-            <TextInput
-              style={styles.textInput}
-              onChangeText={setTextToTranslate}
-              value={textToTranslate}
-              placeholder="Introduce el texto aquí"
-              multiline
-            />
+ 
+          <View>
+        {isEditing ? (
+          <TextInput
+            style={styles.textInput}
+            onChangeText={setTextToTranslate}
+            value={textToTranslate}
+            multiline
+            autoFocus
+            onBlur={handleSave}
+          />
+        ) : (
+          <TouchableWithoutFeedback onPress={handlePress}>
+            <View>
+              <Text style={styles.textInput}>
+                {getHighlightedText(textToTranslate, searchWord)}
+              </Text>
+            </View>
+          </TouchableWithoutFeedback>
+        )}
+      </View>
 
-            <TouchableOpacity style={styles.translateButton} onPress={handleTranslation}  disabled={isTranslating}>
-              {/* <Text style={styles.translateButtonText}>Traducir</Text> */}
+  
+            <TouchableOpacity style={styles.translateButton} onPress={handleTranslation} disabled={isTranslating}>
               {isTranslating ? (
-    <ActivityIndicator size="small" color="#fff" />
-  ) : (
-    <Ionicons name="language" size={24} color="white" />
-  )}
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Ionicons name="language" size={24} color="white" />
+              )}
             </TouchableOpacity>
-
+  
             <Text style={styles.translatedText}>
-  {highlightSearchWord(translatedText, searchWord)}
-</Text>
-
+                {getHighlightedText(translatedText, searcht)}
+            </Text>
+  
+            <Modal
+              animationType="slide"
+              transparent={true}
+              visible={modalVisible}
+              onRequestClose={() => {
+                setModalVisible(!modalVisible);
+              }}
+            >
+              <View style={styles.centeredView}>
+                <View style={styles.modalView}>
+                  <Text style={styles.modalText}>"Sinonimos: " {synonyms} </Text>
+                  <Text style={styles.modalText}>"Definición: " {definition} </Text>
+                  <TouchableOpacity
+                    style={[styles.button, styles.buttonClose]}
+                    onPress={() => setModalVisible(!modalVisible)}
+                  >
+                    <Text style={styles.textStyle}>Cerrar</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
-};
+  
+}; 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const pickerSelectStyles = {
+  
   inputIOS: {
     fontSize: 16,
     paddingVertical: 12,
@@ -484,103 +685,6 @@ const pickerSelectStyles = {
   },
 };
 
-const styles = StyleSheet.create({
-  warningContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  highlightedText: {
-    backgroundColor: 'yellow',
-  },
-  
-  checkbox: {
-    marginRight: 10,
-  },
-  warningText: {
-    fontSize: 14,
-    color: 'red',
-  },
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  languageSelectorsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  arrowIconContainer: {
-    paddingHorizontal: 10, // Adjust the padding as needed
-  },
-  scrollViewContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    paddingVertical: 20,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  image: {
-    width: 350, // Ajusta el ancho según tus necesidades
-    height: 200, // Ajusta la altura según tus necesidades
-    marginBottom: 20,
-  },
-  navBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-  },
-  navTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-  },
-  footerMenu: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    padding: 16,
-    borderTopWidth: 1,
-    borderColor: '#ddd',
-  },
-  mainContainer: {
-    flex: 1,
-    paddingHorizontal: 20,
-    justifyContent: 'flex-start',
-    paddingTop: 20,
-  },
-  
-  textInput: {
-    marginBottom: 15,
-    borderRadius: 10,
-    padding: 16,
-    flex: 1,
-    backgroundColor: 'transparent',
-    fontSize: 18,
-  },
-  translateButton: {
-    backgroundColor: '#1E90FF',
-    padding: 16,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  translateButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  translatedText: {
-    fontSize: 18,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 10,
-    backgroundColor: '#f0f0f0',
-  },
-});
-
-export default PhotoScreen;
+export default PhotoScreen;   
+ 
+ 

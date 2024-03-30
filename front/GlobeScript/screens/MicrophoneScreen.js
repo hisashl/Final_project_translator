@@ -280,14 +280,6 @@
             color={sound ? "#000" : "grey"}
           />
         </TouchableOpacity>
- 
-
-
-
-
-           
-              
-            
             </View>
               <View style={styles.audioInfoContainer}>
               <Text style={styles.timerText}>
