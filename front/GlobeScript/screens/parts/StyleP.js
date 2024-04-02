@@ -8,7 +8,7 @@ const styles = StyleSheet.create({
       marginBottom: 10,
     },
     highlightedText: {
-      backgroundColor: 'yellow',
+      backgroundColor: 'gray',
     },
     
     checkbox: {
@@ -38,6 +38,15 @@ const styles = StyleSheet.create({
       shadowOpacity: 0.25,
       shadowRadius: 4,
       elevation: 5,
+    },
+    wording:{
+      marginTop: 20,
+      marginBottom: 15,
+      fontSize: 18,
+    },
+    word: {
+ 
+      fontSize: 18,
     },
     modalText: {
       marginBottom: 15,
@@ -125,11 +134,12 @@ const styles = StyleSheet.create({
     },
     translatedText: {
       fontSize: 18,
+      marginTop: 10,
       padding: 16,
-      borderWidth: 1,
-      borderColor: '#ddd',
-      borderRadius: 10,
+      borderWidth: 2,
+      borderColor: '#ccc',
       backgroundColor: '#f0f0f0',
+      borderRadius: 10,  
     },
     searchContainer: {
       flexDirection: 'row',

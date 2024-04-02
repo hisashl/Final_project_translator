@@ -2,15 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Modal, View, ActivityIndicator, StyleSheet, TextInput, TouchableOpacity,TouchableWithoutFeedback, KeyboardAvoidingView, Platform, ScrollView, SafeAreaView, Button, Image,Text, Alert, Animated, Easing } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import { Ionicons } from '@expo/vector-icons';
-import CheckBox from '@react-native-community/checkbox';
-import Highlighter from 'react-native-highlight-words';
+ 
 import languageOptions from '../lenguajes.json';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { Camera, FlashMode } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
-import { Menu, MenuOptions, MenuOption, MenuTrigger } from 'react-native-popup-menu';
-import { useNavigation } from '@react-navigation/native'; 
 import {firebase} from '../config';
 import styles from './parts/StyleP';
 const imgDir = FileSystem.documentDirectory + '/images/';
@@ -272,9 +269,6 @@ const PhotoScreen = ({ route  }) => {
    setIsTranslating(true);
   
   };
-  
-
-
   useEffect(() => {
     // Carga de imágenes
     const loadImages = async () => {
@@ -287,11 +281,14 @@ const PhotoScreen = ({ route  }) => {
     loadImages(); 
     if (route.params?.data) {
       animateText(route.params.data);
-     
     }
-  }, [route.params?.data]);
-    
-    
+  
+    // Llama a callCloudFunction cuando selectedWord cambia
+    if (selectedWord) {
+      callCloudFunction(sourcesyn, selectedWord);
+    }
+  }, [route.params?.data, selectedWord]);
+  
 
   const handleImagePress = () => {
     setImageVisible(false);
@@ -352,38 +349,6 @@ const PhotoScreen = ({ route  }) => {
     }, 50); // Ajusta la velocidad de la animación según sea necesario
   };
 
-  
-  const callCloudFunction = async (word) => {
-    try {
-     
-      const response = await fetch('https://us-central1-lingua-80a59.cloudfunctions.net/synonyms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ word: word }),
-      });
-      const data = await response.json();
-      console.log('Cloud function response:', data);
-      setDefinition(data.significados);
-      setSynonyms(data.sinonimos);
-    } catch (error) {
-      console.error('Error calling cloud function:', error);
-    }
-    setModalVisible(!modalVisible);
-  };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   const [isEditing, setIsEditing] = useState(false);
   
@@ -392,9 +357,7 @@ const PhotoScreen = ({ route  }) => {
   const [search, setSearch] = useState('');
 
   const [searcht, setSearcht] = useState('');
-
-  const [found, setFound] = useState(true);
-
+ 
   const handlePress = () => {
     setIsEditing(true);
   };
@@ -402,22 +365,30 @@ const PhotoScreen = ({ route  }) => {
   const handleSave = () => {
     setIsEditing(false);
   };
- 
-
-  const getHighlightedText = (text, highlight) => {
-    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
-    
+  const getHighlightedText = (text, highlights) => {
+    const textWords = text.split(' ');
+    const highlightWords = highlights.toLowerCase().split(' ');
   
     return (
       <Text>
-        {parts.map((part, index) => 
-          part.toLowerCase() === highlight.toLowerCase() ?
-            <Text key={index} style={styles.highlightedText}>{part}</Text> :
-            <Text key={index}>{part}</Text>
-        )}
+        {textWords.map((word, index) => (
+          <TouchableOpacity key={index} onPress={() => handleWordPresstrad(word)}>
+            <Text
+              style={[
+                styles.word,
+                highlightWords.includes(word.toLowerCase()) ? styles.highlightedText : null,
+              ]}
+            >
+              {word + (index < textWords.length - 1 ? ' ' : '')}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </Text>
     );
   };
+  
+  
+  
   const check = (text, highlight) => {
     const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
     const hasHighlight = parts.some((part) => part.toLowerCase() === highlight.toLowerCase());
@@ -427,13 +398,20 @@ const PhotoScreen = ({ route  }) => {
     return hasHighlight;
   };
   
- 
   
-  const searchtrans = () => {
-    if (!sourceLanguage || !targetLanguage) {
-      Alert.alert('Error', 'Por favor, selecciona los idiomas de origen y destino.');
-      return;
+  const searchprev = () => {
+    if (!sourceLanguage  ) {
+      Alert.alert('Error', 'Por favor, selecciona el idioma de origen');
+      return false;
     }
+    return true;
+  }; 
+  const searchpos = () => {
+    if (!targetLanguage) {
+      Alert.alert('Error', 'Por favor, selecciona el idioma de destino.');
+      return false;
+    }
+    return true;
   }; 
   const handleSearchInput = async () => {
     const foundInOriginalText = check(textToTranslate, search);
@@ -474,7 +452,7 @@ const PhotoScreen = ({ route  }) => {
     }
     setSearcht(search);
     setSearchWord(searcht);
-    searchtrans();
+     
     
     if (!sourceLanguage || !targetLanguage) {
       Alert.alert('Error', 'Por favor, selecciona los idiomas de origen y destino.');
@@ -496,7 +474,144 @@ const PhotoScreen = ({ route  }) => {
     }
   };
   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const [selectedWord, setSelectedWord] = useState();
+  const [selectedWordtrad, setSelectedWordtrad] = useState('');
+  const [sourcesyn, setSourcesyn] = useState();
+  const handleWordPress = (word) => {
+    if(searchprev() ===  false)
+    return;
+
+    console.log("Palabra Seleccionada: " + word);
+    setSynonyms(''); // Limpia los sinónimos anteriores
+    setDefinition(''); // Limpia la definición anterior
+    setSelectedWord(word); // Guarda la palabra seleccionada
+    setSourcesyn(sourceLanguage); // Establece el idioma para la traducción
+    callCloudFunction(sourceLanguage, word);
+  };
   
+  const handleWordPresstrad = (word) => {
+    if(searchpos() ===  false)
+    return;
+    console.log("Palabra Seleccionada: " + word);
+    setSynonyms(''); // Limpia los sinónimos anteriores
+    setDefinition(''); // Limpia la definición anterior
+    setSelectedWord(word); // Guarda la palabra seleccionada
+    setSourcesyn(targetLanguage); // Establece el idioma para la traducción
+    callCloudFunction(targetLanguage, word);
+  };
+  
+  
+  const handleLanguageChange = async (newLanguage) => {
+    
+    setSourcesyn(newLanguage); // Actualiza el estado con el nuevo idioma seleccionado
+    if (selectedWord) { // Si hay una palabra seleccionada, actualiza la información en el nuevo idioma
+      callCloudFunction(sourcesyn, selectedWord);
+    }
+  };
+  
+  const renderTextWithClickableWords = (text, highlights) => {
+    const words = text.split(' ');
+    const highlightWords = highlights.toLowerCase().split(' ');
+  
+    return (
+      <Text style={styles.textInput}>
+        {words.map((word, index) => (
+          <TouchableOpacity key={index} onPress={() => handleWordPress(word)}>
+            <Text
+              style={[
+                styles.word,
+                highlightWords.includes(word.toLowerCase()) ? styles.highlightedText : null
+              ]}
+            >
+              {word + ' '}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </Text>
+    );
+  };
+  
+
+  const callCloudFunction = async (newLanguage, word) => {
+    
+    console.log('palabra con llamada: ' + word);
+    const translatedWord = await translateText(word, 'en'); // Traduce la palabra al inglés
+    try {
+      const response = await fetch('https://us-central1-lingua-80a59.cloudfunctions.net/synonyms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ word: translatedWord }),
+      });
+      const data = await response.json();
+      console.log(selectedWord, 'response:', data);
+  
+      const synArray = data.sinonimos.split(', '); // Divide la cadena de sinónimos en un array
+      const firstThreeSynonyms = synArray.slice(0, 3).join(', '); // Toma solo los primeros tres sinónimos
+      const synString = `Synonyms: ${firstThreeSynonyms}`;
+      const defString = `Definition: ${data.significados}`;
+  
+  
+      // Traduce los valores al idioma seleccionado en el modal
+      const translatedSyn = await translateText(synString, newLanguage);
+      const translatedDef = await translateText(defString, newLanguage);
+  
+      // Actualiza los estados con los valores traducidos
+      setSynonyms(translatedSyn);
+      setDefinition(translatedDef);
+    } catch (error) {
+      console.error('Error calling cloud function:', error);
+    }
+  
+    // Muestra el modal después de que se hayan completado todas las operaciones
+    setModalVisible(true);
+  };
+  
+  
+   
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -504,6 +619,7 @@ const PhotoScreen = ({ route  }) => {
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
           <View style={styles.navBar}>
             <Text style={styles.navTitle}>Traducir</Text>
+           
             <Ionicons name="search-outline" size={24} color="gray" onPress={() => setShowSearch(!showSearch)} />
           </View>
         
@@ -579,11 +695,7 @@ const PhotoScreen = ({ route  }) => {
           />
         ) : (
           <TouchableWithoutFeedback onPress={handlePress}>
-            <View>
-              <Text style={styles.textInput}>
-                {getHighlightedText(textToTranslate, searchWord)}
-              </Text>
-            </View>
+            <View>{renderTextWithClickableWords(textToTranslate, searchWord)}</View>
           </TouchableWithoutFeedback>
         )}
       </View>
@@ -598,7 +710,7 @@ const PhotoScreen = ({ route  }) => {
             </TouchableOpacity>
   
             <Text style={styles.translatedText}>
-                {getHighlightedText(translatedText, searcht)}
+            {getHighlightedText(translatedText, searcht)}
             </Text>
   
             <Modal
@@ -609,16 +721,32 @@ const PhotoScreen = ({ route  }) => {
                 setModalVisible(!modalVisible);
               }}
             >
+              
               <View style={styles.centeredView}>
+                
+
+
+
+
                 <View style={styles.modalView}>
-                  <Text style={styles.modalText}>"Sinonimos: " {synonyms} </Text>
-                  <Text style={styles.modalText}>"Definición: " {definition} </Text>
-                  <TouchableOpacity
-                    style={[styles.button, styles.buttonClose]}
-                    onPress={() => setModalVisible(!modalVisible)}
-                  >
-                    <Text style={styles.textStyle}>Cerrar</Text>
-                  </TouchableOpacity>
+                  
+                   <RNPickerSelect
+                placeholder={placeholder}
+                items={languageOptions.map(lang => ({ label: lang.name, value: lang.code }))}
+                onValueChange={(value) => handleLanguageChange(value)}
+                style={pickerSelectStylescustom}
+                value={sourcesyn}
+                useNativeAndroidPickerStyle={false}
+              />
+
+                  <Text style={styles.wording}> {selectedWord} </Text>
+
+
+
+                  <Text style={styles.modalText}> {synonyms} </Text>
+                  <Text style={styles.modalText}> {definition} </Text>
+                  <Ionicons name="exit" size={24} color="#259CF6"    onPress={() => setModalVisible(!modalVisible)}/>
+                  
                 </View>
               </View>
             </Modal>
@@ -685,6 +813,102 @@ const pickerSelectStyles = {
   },
 };
 
+
+
+
+const pickerSelectStylescustom = {
+  
+  inputIOS: {
+    marginLeft: 72.5,
+    fontSize: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderWidth: 2,
+    borderColor: 'gray',
+    borderRadius: 10,
+    color: 'black',
+    paddingRight: 30,
+    backgroundColor: '#fff',
+    width: 130, 
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 0.5,
+    borderColor: 'gray',
+    borderRadius: 8,
+    color: 'black',
+    paddingRight: 30,
+    backgroundColor: '#fff',
+    width: 130, // Adjust the width as needed
+  },
+  iconContainer: {
+    top: 5,
+    right: 15,
+  },
+};
 export default PhotoScreen;   
- 
- 
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import React, { useState } from 'react';
+// import { SafeAreaView, Text, TouchableOpacity, StyleSheet } from 'react-native';
+
+// const PhotoScreen = () => {
+//   const [selectedWord, setSelectedWord] = useState('');
+
+//   const text = 'Este es un ejemplo de texto con varias palabras.';
+//   const words = text.split(' ');
+
+//   const handlePressWord = (word) => {
+//     setSelectedWord(word);
+//   };
+
+//   return (
+//     <SafeAreaView style={styles.container}>
+//       {words.map((word, index) => (
+//         <TouchableOpacity key={index} onPress={() => handlePressWord(word)}>
+//           <Text style={styles.word}>{word} </Text>
+//         </TouchableOpacity>
+//       ))}
+//       <Text style={styles.selectedWord}>Palabra seleccionada: {selectedWord}</Text>
+//     </SafeAreaView>
+//   );
+// };
+
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//     padding: 20,
+//   },
+//   word: {
+//     fontSize: 18,
+//   },
+//   selectedWord: {
+//     marginTop: 20,
+//     fontSize: 18,
+//     fontWeight: 'bold',
+//   },
+// });
+
+// export default PhotoScreen;
