@@ -617,7 +617,7 @@ const PhotoScreen = ({ route  }) => {
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
-          <View style={styles.navBar}>
+        <View style={styles.navBar}>
             <Text style={styles.navTitle}>Traducir</Text>
            
             <Ionicons name="search-outline" size={24} color="gray" onPress={() => setShowSearch(!showSearch)} />

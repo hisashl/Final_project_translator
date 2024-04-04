@@ -11,7 +11,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true
     },
@@ -31,7 +33,8 @@
           "microphonePermission": "Allow $(GlobeScript) to access your microphone",
           "speechRecognitionPermission": "Allow $(GlobeScript) to securely recognize user speech"
         }
-      ]
+      ],
+      "expo-font"
     ]
   }
 }
