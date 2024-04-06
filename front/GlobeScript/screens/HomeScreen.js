@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
@@ -6,6 +6,7 @@ import EditScreen from './EditScreen'; // Import your EditScreen component
 import TextScreen from './TextScreen'; // Import your TextScreen component
 import PhotoScreen from './PhotoScreen'; // Import your PhotoScreen component
 import MicrophoneScreen from './MicrophoneScreen'; // Import your MicrophoneScreen component
+import { useStyle } from './StyleContext';
 
 const Tab = createBottomTabNavigator();
 
@@ -42,6 +43,40 @@ const createAnimatedStyles = (focused) => {
 };
 
 export default function HomeScreen() {
+  const { styler } = useStyle();
+
+  const styles = StyleSheet.create({
+    iconContainer: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center', // Centrar vertical y horizontalmente
+      paddingTop: 20,
+    },
+
+    tabBar: {
+      height: 60,
+      position: 'absolute',
+      bottom: 20,
+      right: 16,
+      left: 16,
+      borderRadius: 10,
+      backgroundColor: styler.backgroundColor, // Use the backgroundColor from styler
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 10,
+      elevation: 1,
+    },
+    icon: {
+      width: 30,
+      height: 40,
+      resizeMode: 'contain',
+    },
+    iconFocused: {
+      tintColor: '#007AFF', // Change the color when focused
+    },
+  });
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -75,37 +110,3 @@ export default function HomeScreen() {
     </Tab.Navigator>
   );
 }
-
-const styles = StyleSheet.create({
-  
-  iconContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center', // Centrar vertical y horizontalmente
-    paddingTop: 20,
-  },
-
-  tabBar: {
-    height: 60,
-    position: 'absolute',
-    
-    bottom: 20,
-    right: 16,
-    left: 16,
-    borderRadius: 10,
-    backgroundColor: '#ffffff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 1,
-  },
-  icon: {
-    width: 30,
-    height: 40,
-    resizeMode: 'contain',
-  },
-  iconFocused: {
-    tintColor: '#007AFF', // Change the color when focused
-  },
-});

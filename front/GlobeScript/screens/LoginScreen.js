@@ -14,7 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'; 
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import CryptoJS from 'react-native-crypto-js';
 export default function LoginScreen() {
   const [username, setUsername] = useState('');
@@ -53,6 +53,9 @@ export default function LoginScreen() {
       })
       .then(response => {
         if (response.data.includes('True')) {
+          AsyncStorage.setItem('username', username); // Guarda el nombre de usuario
+          AsyncStorage.setItem('password', password); // Guarda la contraseña
+
           Alert.alert('Success', 'Inicio de sesión exitoso');
           navigation.navigate('Home');
         } else {

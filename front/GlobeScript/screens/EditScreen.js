@@ -1,5 +1,6 @@
-import React, { useState } 
-from 'react';import {
+import React, { useState, useEffect }
+from 'react';
+import {
   Keyboard,
   TouchableWithoutFeedback,
   ActivityIndicator,
@@ -14,13 +15,15 @@ from 'react';import {
   KeyboardAvoidingView, 
   Platform,
   ScrollView,
-} from 'react-native';
+} from 'react-native'; 
+import { useStyle  } from './StyleContext';
 import { Ionicons, FontAwesome5  } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import Slider from '@react-native-community/slider';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Font from 'expo-font';
 import { useFonts } from 'expo-font';
-
+import axios from 'axios';
 import ColorPicker, { Panel3, Preview, BrightnessSlider, OpacitySlider } from 'reanimated-color-picker';
 
 export default function EditScreen() {
@@ -32,11 +35,68 @@ export default function EditScreen() {
   const [isEditingBackground, setIsEditingBackground] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState('#FFFFFF');
   const [inputBackgroundColor, setInputBackgroundColor] = useState('#FFFFFF');
+  const { updateStyles } = useStyle();
+
  
- 
+
+  const [profiles, setProfiles] = useState([]); // Estado para almacenar todos los perfiles
+  const [currentProfileIndex, setCurrentProfileIndex] = useState(0); // Índice del perfil actualmente seleccionado
+
+
+  useEffect(() => {
+    loadProfiles();
+  }, []);
+
+  const changeProfile = (index) => {
+    if (profiles && index < profiles.length) {
+      setCurrentProfileIndex(index);
+      const selectedProfile = profiles[index];
+      if (selectedProfile) {
+        setTextColor(selectedProfile.textColor);
+        setBackgroundColor(selectedProfile.backgroundColor);
+        setSelectedFont(selectedProfile.fontFamily);
+        setFontSize(parseInt(selectedProfile.fontSize, 10)); // Convierte la cadena a número
+      }
+    }
+  };
+  
+   
+
+const loadProfiles = async () => {
+  try {
+    
+    const user_id = await AsyncStorage.getItem('username');
+    if (!user_id) {
+      Alert.alert('Error', 'User ID not found.');
+      return;
+    }
+
+    const response = await axios.post('https://us-central1-lingua-80a59.cloudfunctions.net/list_styles', {
+      user_id: user_id,
+    });
+
+    const result = response.data;
+
+    if (result.status === 'success') {
+      setProfiles(result.profiles);
+      // Si quieres seleccionar automáticamente el primer perfil como activo:
+      if (result.profiles.length > 0) {
+        changeProfile(0); // Asume que tienes una función llamada changeProfile
+      }
+    } else {
+      Alert.alert('Error', result.message || 'Failed to fetch profiles');
+    }
+  } catch (error) {
+    Alert.alert('Error', error.message || 'An error occurred while fetching profiles');
+  }  
+};
+
+  
+
   const handleCompleteColorPicker = ({ hex }) => {
     setTextColor(hex);
     setInputColor(hex);
+    setIsEditing(false);
     setIsEditing(false); // Desactivar modo edición cuando se selecciona un color
   };
   const toggleEdit = () => {
@@ -46,14 +106,55 @@ export default function EditScreen() {
       handleCompleteColorPicker({ hex: inputColor });
     }
   };
-  const handleColorInputChange = (color) => {
-    // Validar y actualizar el color solo si es un código hexadecimal válido
-    if (/^#[0-9A-F]{6}$/i.test(color)) {
-      setInputColor(color);
-      setTextColor(color); // Esto asegura que el valor del texto y el color se actualicen
+  const savechanges = async () => {
+    const user_id = await AsyncStorage.getItem('username');
+    if (!user_id) {
+      Alert.alert('Error', 'User ID not found.');
+      return;
     }
-  };
+     
+    const profileData = {
+      // user_id: user_id,
+      // profile: currentProfileIndex, // Asumiendo que los perfiles están numerados a partir del 1
+      // name: profiles[currentProfileIndex].name, // Asume que cada perfil tiene un nombre
+      // textColor: textColor,
+      // fontSize: fontSize, // Convierte el número a una cadena
+      // fontFamily: selectedFont,
+      // backgroundColor: backgroundColor
+      user_id: user_id,
+      profile: currentProfileIndex + 1, // Asumiendo que los perfiles están numerados a partir del 1
+      name: profiles[currentProfileIndex]?.name, // Asume que cada perfil tiene un nombre
+      textColor: textColor,
+      fontSize: fontSize.toString(), // Convierte el número a una cadena
+      fontFamily: selectedFont,
+      backgroundColor: backgroundColor
+    };
+  
+    try {
+      const response = await axios.post('https://us-central1-lingua-80a59.cloudfunctions.net/styles', profileData);
+      const result = response.data;
+  
+      if (result.includes('successfully')) {
+        Alert.alert('Success', 'Profile updated successfully.');
+        // Actualiza la lista de perfiles si es necesario
+      } else {
+        Alert.alert('Error', 'Failed to update profile.');
+      }
+    } catch (error) {
+      Alert.alert('Error', error.message || 'An error occurred while updating the profile.');
+    }
 
+ 
+  };
+  
+    
+ const apply = ()=>{
+  updateStyles({ textColor: textColor, inputColor: textColor });
+  updateStyles({ backgroundColor: backgroundColor, inputBackgroundColor: backgroundColor });
+  updateStyles({ fontFamily: selectedFont });
+  updateStyles({ fontSize: fontSize });
+  savechanges();
+ }
   const fonts = {
     'Roboto': require('../assets/fonts/Roboto-Regular.ttf'),
     'Calibri': require('../assets/fonts/calibri.ttf'),
@@ -62,8 +163,8 @@ export default function EditScreen() {
   };
 
   const [fontsLoaded] = useFonts(fonts);
-   // Manejador para el cambio de color desde el TextInput
-   const handleTextInputColor = (hex) => {
+  // Manejador para el cambio de color desde el TextInput
+  const  handleTextInputColor = (hex) => {
     setInputColor(hex);
     // Opcionalmente, valida y actualiza el color del texto solo si es un hex válido
     if (/^#([0-9A-F]{3}){1,2}$/i.test(hex)) {
@@ -73,6 +174,7 @@ export default function EditScreen() {
   const handleCompleteBackgroundPicker = ({ hex }) => {
     setBackgroundColor(hex);
     setInputBackgroundColor(hex);
+    
     setIsEditingBackground(false);
   };
 
@@ -84,19 +186,42 @@ export default function EditScreen() {
     }
   };
 
-   const handleBackgroundInputChange = (color) => {
+  const handleBackgroundInputChange = (color) => {
     setInputBackgroundColor(color); // Actualiza siempre el color ingresado
     if (/^#[0-9A-F]{6}$/i.test(color)) {
       setBackgroundColor(color); // Solo actualiza el color de fondo si es válido
+     
     }
   };
+  
 
 
   if (!fontsLoaded) {
     return <View style={styles.centered}><Text>Loading...</Text></View>;
   }
+  const handleFontSizeChange = (value) => {
+    setFontSize(value);
+    // Aquí puedes agregar más acciones que quieras ejecutar cuando cambie el valor del Slider
+    // AsyncStorage.getItem('username').then((username) => {
+    //   console.log(username); // Usar el nombre de usuario
+    // });
+    
+    // AsyncStorage.getItem('password').then((password) => {
+    //   console.log(password); // Usar la contraseña
+    // });
+    
+   
+  };
+  const handleSelectedFont = (itemValue) => {
+    setSelectedFont(itemValue);
+  
+  };
+  
  
+
   return (
+  
+  
     <SafeAreaView style={[styles.safeArea, { backgroundColor: backgroundColor }]}>
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -109,22 +234,43 @@ export default function EditScreen() {
           <View style={styles.footerMenu}>
           <Ionicons name="create" size={40} color="#000" />
             </View>
-         
+
+
+            <View style={styles.profilesContainer}>
+  {profiles.map((profile, index) => (
+    <TouchableOpacity
+      key={index}
+      style={[styles.profileButton, index === currentProfileIndex ? styles.selectedProfile : null]}
+      onPress={() => changeProfile(index)}
+    >
+      <Text style={styles.profileButtonText}>{profile.name}</Text>
+    </TouchableOpacity>
+  ))}
+</View>
+
+
+
+
+
+            <Button title="Guardar Cambios" onPress={savechanges} />
+            <Button title="Aplicar" onPress={apply} />
+ 
       <ColorPicker
           style={{ width: '60%' }}
           value={textColor}
           onComplete={handleCompleteColorPicker}
-          onColorChange={({ hex }) => setTextColor(hex)} // Actualizar en tiempo real mientras se selecciona el color
+          // onColorChange={({ hex }) => setTextColor(hex)} // Actualizar en tiempo real mientras se selecciona el color
+          onColorChange={({ hex }) => updateStyles({ textColor: hex })}
         >
           {isEditing ? (
-           <TextInput
-           style={styles.colorInput}
-           value={inputColor}
-           onChangeText={handleTextInputColor}
-           maxLength={7} // Longitud para el formato hexadecimal #RRGGBB
-           autoCapitalize='characters' // Asegura que la entrada esté en mayúsculas
-           placeholder='#RRGGBB'
-         />
+          <TextInput
+          style={styles.colorInput}
+          value={inputColor}
+          onChangeText={handleTextInputColor}
+          maxLength={7} // Longitud para el formato hexadecimal #RRGGBB
+          autoCapitalize='characters' // Asegura que la entrada esté en mayúsculas
+          placeholder='#RRGGBB'
+        />
           ) : (
             <TouchableOpacity onPress={toggleEdit}>
               <Preview hideInitialColor={true} color={textColor} />
@@ -149,35 +295,35 @@ export default function EditScreen() {
           maximumValue={30}
           step={1}
           value={fontSize}
-          onValueChange={setFontSize}
+          onValueChange={handleFontSizeChange}
         />
- 
+
         <Text style={styles.label}>Selecciona la Fuente:</Text>
         <Picker
           selectedValue={selectedFont}
           style={styles.picker}
-          onValueChange={(itemValue) => setSelectedFont(itemValue)}
+          onValueChange={(itemValue) => handleSelectedFont(itemValue)}
         >
           {Object.keys(fonts).map((font) => (
             <Picker.Item key={font} label={font} value={font} />
           ))}
         </Picker>
-               <Text style={styles.label}>Color de Fondo:</Text>
-               <ColorPicker
+              <Text style={styles.label}>Color de Fondo:</Text>
+              <ColorPicker
           style={{ width: '60%' }}
           value={backgroundColor}
           onComplete={handleCompleteBackgroundPicker}
           onColorChange={({ hex }) => setBackgroundColor(hex)}
         >
-       
+      
           {isEditingBackground ? (
-             <TextInput
-             style={styles.colorInput}
-             value={inputBackgroundColor}
-             onChangeText={handleBackgroundInputChange}
-             maxLength={7} // Longitud para el formato hexadecimal #RRGGBB
-             autoCapitalize='characters' // Asegura que la entrada esté en mayúsculas
-             placeholder='#RRGGBB'/>
+            <TextInput
+            style={styles.colorInput}
+            value={inputBackgroundColor}
+            onChangeText={handleBackgroundInputChange}
+            maxLength={7} // Longitud para el formato hexadecimal #RRGGBB
+            autoCapitalize='characters' // Asegura que la entrada esté en mayúsculas
+            placeholder='#RRGGBB'/>
           ) : (
             <TouchableOpacity onPress={toggleEditBackground}>
               <Preview hideInitialColor={true} color={backgroundColor} />
@@ -191,15 +337,19 @@ export default function EditScreen() {
           </View>
           <OpacitySlider />
         </ColorPicker>
+       
 
-         
+
+        
 
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
-   </SafeAreaView>
+  </SafeAreaView>
+  
   );
 }
+
 const styles = StyleSheet.create({
   colorInput: {
     height: 40,
@@ -274,8 +424,25 @@ const styles = StyleSheet.create({
     marginTop: 20, // Espacio antes del Picker
     marginBottom: 20, // Espacio después del Picker
   },
+  profilesContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 10,
+  },
+  profileButton: {
+    padding: 10,
+    borderRadius: 5,
+    backgroundColor: '#f0f0f0',
+  },
+  selectedProfile: {
+    backgroundColor: '#c0c0c0',
+  },
+  profileButtonText: {
+    fontSize: 16,
+  },
   previewText: {
     textAlign: 'center',
     marginVertical: 20, // Espacio vertical para el texto de previsualización
   },
 }); 
+  

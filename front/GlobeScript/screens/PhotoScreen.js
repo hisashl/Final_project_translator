@@ -9,7 +9,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import { Camera, FlashMode } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
 import {firebase} from '../config';
-import styles from './parts/StyleP';
+import useCustomStyles from './parts/StyleP'; // Ajusta la ruta según necesidad './parts/StyleP';
 const imgDir = FileSystem.documentDirectory + '/images/';
 const ensureDirExist = async () => {
   const dirInfo = await FileSystem.getInfoAsync(imgDir);
@@ -26,7 +26,8 @@ const placeholder = {
 
 
 const PhotoScreen = ({ route  }) => {
-  
+  const styles = useCustomStyles();
+
   const [showWarning, setShowWarning] = useState(true);
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
@@ -35,7 +36,7 @@ const PhotoScreen = ({ route  }) => {
   const [imageVisible, setImageVisible] = useState(false);
   const [sourceLanguage, setSourceLanguage] = useState();
   const [targetLanguage, setTargetLanguage] = useState();
-  const [textToTranslate, setTextToTranslate] = useState('Introduce algo');
+  const [textToTranslate, setTextToTranslate] = useState('');
   const [translatedText, setTranslatedText] = useState('');
   const [definition, setDefinition] = useState('');
   const [synonyms, setSynonyms] = useState('');
@@ -370,6 +371,9 @@ const PhotoScreen = ({ route  }) => {
     const highlightWords = highlights.toLowerCase().split(' ');
   
     return (
+      <View 
+      style = {styles.translatedText} 
+      > 
       <Text>
         {textWords.map((word, index) => (
           <TouchableOpacity key={index} onPress={() => handleWordPresstrad(word)}>
@@ -384,6 +388,7 @@ const PhotoScreen = ({ route  }) => {
           </TouchableOpacity>
         ))}
       </Text>
+      </View>
     );
   };
   
@@ -552,28 +557,38 @@ const PhotoScreen = ({ route  }) => {
       callCloudFunction(sourcesyn, selectedWord);
     }
   };
-  
   const renderTextWithClickableWords = (text, highlights) => {
+    if (!text.trim()) {  // Verifica si el texto está vacío o solo contiene espacios en blanco
+      return (
+        <View style={styles.sourcee}>
+          <Text style={styles.textInput}>Introduce texto</Text>
+        </View>
+      );  // Muestra la leyenda
+    }
+  
     const words = text.split(' ');
     const highlightWords = highlights.toLowerCase().split(' ');
   
     return (
-      <Text style={styles.textInput}>
-        {words.map((word, index) => (
-          <TouchableOpacity key={index} onPress={() => handleWordPress(word)}>
-            <Text
-              style={[
-                styles.word,
-                highlightWords.includes(word.toLowerCase()) ? styles.highlightedText : null
-              ]}
-            >
-              {word + ' '}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </Text>
+      <View style={styles.sourcee}>
+        <Text style={styles.textInput}>
+          {words.map((word, index) => (
+            <TouchableOpacity key={index} onPress={() => handleWordPress(word)}>
+              <Text
+                style={[
+                  styles.word,
+                  highlightWords.includes(word.toLowerCase()) ? styles.highlightedText : null
+                ]}
+              >
+                {word + ' '}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </Text>
+      </View>
     );
   };
+  
   
 
   const callCloudFunction = async (newLanguage, word) => {
@@ -661,7 +676,7 @@ const PhotoScreen = ({ route  }) => {
             )} 
             
             <View style={styles.languageSelectorsContainer}>
-              <RNPickerSelect
+            <RNPickerSelect
                 placeholder={placeholder}
                 items={languageOptions.map(lang => ({ label: lang.name, value: lang.code }))}
                 onValueChange={(value) => setSourceLanguage(value)}
@@ -684,9 +699,14 @@ const PhotoScreen = ({ route  }) => {
             
  
           <View>
+
+
+
+
         {isEditing ? (
           <TextInput
             style={styles.textInput}
+            placeholder="Escribe algo aquí..."
             onChangeText={setTextToTranslate}
             value={textToTranslate}
             multiline
@@ -698,6 +718,11 @@ const PhotoScreen = ({ route  }) => {
             <View>{renderTextWithClickableWords(textToTranslate, searchWord)}</View>
           </TouchableWithoutFeedback>
         )}
+
+
+
+
+
       </View>
 
   
@@ -709,10 +734,16 @@ const PhotoScreen = ({ route  }) => {
               )}
             </TouchableOpacity>
   
-            <Text style={styles.translatedText}>
+            <Text>
             {getHighlightedText(translatedText, searcht)}
             </Text>
   
+
+
+
+
+
+
             <Modal
               animationType="slide"
               transparent={true}
@@ -792,7 +823,7 @@ const pickerSelectStyles = {
     borderRadius: 10,
     color: 'black',
     paddingRight: 30,
-    backgroundColor: '#fff',
+    backgroundColor: '#FAF9F6',
     width: 130, 
   },
   inputAndroid: {
@@ -804,7 +835,7 @@ const pickerSelectStyles = {
     borderRadius: 8,
     color: 'black',
     paddingRight: 30,
-    backgroundColor: '#fff',
+    backgroundColor: '#FAF9F6',
     width: 130, // Adjust the width as needed
   },
   iconContainer: {
@@ -828,7 +859,7 @@ const pickerSelectStylescustom = {
     borderRadius: 10,
     color: 'black',
     paddingRight: 30,
-    backgroundColor: '#fff',
+    backgroundColor: '#FAF9F6',
     width: 130, 
   },
   inputAndroid: {
@@ -840,7 +871,7 @@ const pickerSelectStylescustom = {
     borderRadius: 8,
     color: 'black',
     paddingRight: 30,
-    backgroundColor: '#fff',
+    backgroundColor: '#FAF9F6',
     width: 130, // Adjust the width as needed
   },
   iconContainer: {

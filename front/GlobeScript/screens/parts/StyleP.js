@@ -1,7 +1,8 @@
 import { StyleSheet } from 'react-native';
-
-
-const styles = StyleSheet.create({
+import { useStyle } from '../StyleContext'
+const useCustomStyles = () => {
+  const { styler } = useStyle();
+  return StyleSheet.create({
     warningContainer: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -46,7 +47,10 @@ const styles = StyleSheet.create({
     },
     word: {
  
-      fontSize: 18,
+      fontFamily: styler.fontFamily,
+     
+      fontSize: styler.fontSize || 18, // Usa el tamaño de fuente de styler o cae de nuevo a 18
+      color: styler.textColor || 'black', // Usa el color de texto de styler o cae de nuevo a negro
     },
     modalText: {
       marginBottom: 15,
@@ -62,7 +66,7 @@ const styles = StyleSheet.create({
     },
     safeArea: {
       flex: 1,
-      backgroundColor: '#fff',
+      backgroundColor:  styler.backgroundColor,
     },
     languageSelectorsContainer: {
       flexDirection: 'row',
@@ -80,7 +84,7 @@ const styles = StyleSheet.create({
     },
     container: {
       flex: 1,
-      backgroundColor: '#fff',
+      backgroundColor:  styler.backgroundColor,
     },
     image: {
       width: 350, // Ajusta el ancho según tus necesidades
@@ -115,10 +119,12 @@ const styles = StyleSheet.create({
     textInput: {
       marginBottom: 15,
       borderRadius: 10,
-      padding: 16,
+      // padding: 16,
       flex: 1,
       backgroundColor: 'transparent',
-      fontSize: 18,
+      fontFamily: styler.fontFamily,
+      fontSize: styler.fontSize || 18, // Usa el tamaño de fuente de styler o cae de nuevo a 18
+      color: styler.textColor || 'black', // Usa el color de texto de styler o cae de nuevo a negro
     },
     translateButton: {
       backgroundColor: '#1E90FF',
@@ -133,14 +139,27 @@ const styles = StyleSheet.create({
       fontSize: 16,
     },
     translatedText: {
-      fontSize: 18,
-      marginTop: 10,
+     
+     
+      marginLeft: 20,  // Aumenta el espacio a la izquierda
+      marginRight: 50,  // Reduce el espacio a la derecha si es necesario
       padding: 16,
       borderWidth: 2,
       borderColor: '#ccc',
       backgroundColor: '#f0f0f0',
-      borderRadius: 10,  
+      borderRadius: 10,
+    },    
+    
+    sourcee: {
+      fontSize: 18,
+      marginBottom: 20,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: '#ccc',
+      backgroundColor: 'white',
+      borderRadius: 10, 
     },
+    
     searchContainer: {
       flexDirection: 'row',
       alignItems: 'right',
@@ -154,4 +173,5 @@ const styles = StyleSheet.create({
     },
     
   });
-  export default styles;
+}
+export default useCustomStyles;

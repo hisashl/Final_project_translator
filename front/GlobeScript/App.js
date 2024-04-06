@@ -14,6 +14,7 @@ import tabs from './screens/navigation/tabs';
 import NewPw from './screens/forgot/NewPw';
 import TextScreen from './screens/TextScreen';
 import PhotoScreen from './screens/PhotoScreen';   
+import { StyleProvider } from './screens/StyleContext';
 import MicrophoneScreen from './screens/MicrophoneScreen';
 import Synonyms from './screens/synonyms';
 import EditScreen from './screens/EditScreen';
@@ -22,6 +23,9 @@ const Tab = createBottomTabNavigator();
 export default function App() {
   return (
         <NavigationContainer> 
+             <StyleProvider>
+
+          
       <Stack.Navigator>
         {/* <Stack.Screen   options={{ headerShown: false }}  name="Bienvenida" component={Bienvenida} />
         <Stack.Screen options = {{headerShown: false}} name="Login" component={LoginScreen} /> */}
@@ -40,6 +44,7 @@ export default function App() {
         <Stack.Screen options = {{headerShown: false}} name="NewPw" component={NewPw} /> 
        
         </Stack.Navigator>
+        </StyleProvider>
     </NavigationContainer>
   );
 }
