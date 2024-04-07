@@ -90,6 +90,7 @@ const useCustomStyles = () => {
       width: 350, // Ajusta el ancho según tus necesidades
       height: 200, // Ajusta la altura según tus necesidades
       marginBottom: 20,
+      
     },
     navBar: {
       flexDirection: 'row',
@@ -97,17 +98,20 @@ const useCustomStyles = () => {
       alignItems: 'center',
       paddingVertical: 16,
       paddingHorizontal: 20,
+     
     },
     navTitle: {
       fontSize: 22,
       fontWeight: 'bold',
+      color: styler.textColor || 'black' ,
     },
     footerMenu: {
       flexDirection: 'row',
       justifyContent: 'space-around',
       padding: 16,
       borderTopWidth: 1,
-      borderColor: '#ddd',
+      borderColor: styler.textColor || 'black'  ,
+      // styler.backgroundColor
     },
     mainContainer: {
       flex: 1,

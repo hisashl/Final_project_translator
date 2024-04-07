@@ -16,11 +16,32 @@ import { useNavigation } from '@react-navigation/native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'; 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CryptoJS from 'react-native-crypto-js';
+import { useStyle } from './StyleContext';
+
 export default function LoginScreen() {
+  const { updateStyles } = useStyle();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
+
+  
+  const loadCurrentProfile = async () => {
+    try {
+      const profileData = await AsyncStorage.getItem('currentProfile');
+      if (profileData !== null) {
+        const profile = JSON.parse(profileData);
+        updateStyles({
+          textColor: profile.textColor,
+          backgroundColor: profile.backgroundColor,
+          fontFamily: profile.fontFamily,
+          fontSize: parseInt(profile.fontSize, 10),
+        });
+      }
+    } catch (error) {
+      console.error('Error loading current profile:', error);
+    }
+  };
 
   useEffect(() => {
     const source = axios.CancelToken.source();
@@ -57,6 +78,11 @@ export default function LoginScreen() {
           AsyncStorage.setItem('password', password); // Guarda la contraseña
 
           Alert.alert('Success', 'Inicio de sesión exitoso');
+
+          loadCurrentProfile();
+
+
+
           navigation.navigate('Home');
         } else {
           Alert.alert('Error', 'Datos de inicio de sesión inválidos');

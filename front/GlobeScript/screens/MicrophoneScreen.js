@@ -508,6 +508,7 @@ import { useStyle } from './StyleContext'
       
         navTitle: {
           fontSize: 22,
+          color: styler.textColor,
           fontWeight: 'bold',
         },
         footerMenu: {
@@ -515,7 +516,7 @@ import { useStyle } from './StyleContext'
           justifyContent: 'space-around',
           padding: 16,
           borderTopWidth: 1,
-          borderColor: '#ddd',
+          borderColor: styler.textColor || '#ddd',
         },
         mainContainer: {
           flex: 1,

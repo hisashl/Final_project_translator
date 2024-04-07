@@ -43,25 +43,93 @@ export default function EditScreen() {
   const [currentProfileIndex, setCurrentProfileIndex] = useState(0); // Índice del perfil actualmente seleccionado
 
 
+
+
+  const [profileName, setProfileName] = useState('');
+
+
   useEffect(() => {
     loadProfiles();
+    loadCurrentProfile();
   }, []);
 
-  const changeProfile = (index) => {
+  const changeProfile = async (index) => {
     if (profiles && index < profiles.length) {
       setCurrentProfileIndex(index);
       const selectedProfile = profiles[index];
       if (selectedProfile) {
+        setProfileName(selectedProfile.name);
         setTextColor(selectedProfile.textColor);
         setBackgroundColor(selectedProfile.backgroundColor);
         setSelectedFont(selectedProfile.fontFamily);
-        setFontSize(parseInt(selectedProfile.fontSize, 10)); // Convierte la cadena a número
+        setFontSize(parseInt(selectedProfile.fontSize, 10));
+        // Guardar el perfil actual en AsyncStorage
+        try {
+          const profileData = {
+            index: index.toString(),
+            name: selectedProfile.name,
+            textColor: selectedProfile.textColor,
+            backgroundColor: selectedProfile.backgroundColor,
+            fontFamily: selectedProfile.fontFamily,
+            fontSize: selectedProfile.fontSize
+          };
+          await AsyncStorage.setItem('currentProfile', JSON.stringify(profileData));
+        } catch (error) {
+          console.error('Error saving current profile:', error);
+        }
       }
+    }
+  };
+  const loadCurrentProfile = async () => {
+    try {
+      const profileData = await AsyncStorage.getItem('currentProfile');
+      if (profileData !== null) {
+        const profile = JSON.parse(profileData);
+        setCurrentProfileIndex(parseInt(profile.index, 10));
+        setProfileName(profile.name);
+        setTextColor(profile.textColor);
+        setBackgroundColor(profile.backgroundColor);
+        setSelectedFont(profile.fontFamily);
+        setFontSize(parseInt(profile.fontSize, 10));
+      }
+    } catch (error) {
+      console.error('Error loading current profile:', error);
     }
   };
   
    
-
+  const updateCurrentProfile = async () => {
+    try {
+      const user_id = await AsyncStorage.getItem('username');
+      if (!user_id) {
+        Alert.alert('Error', 'User ID not found.');
+        return;
+      }
+  
+      const response = await axios.post('https://us-central1-lingua-80a59.cloudfunctions.net/list_styles', {
+        user_id: user_id,
+      });
+  
+      const result = response.data;
+  
+      if (result.status === 'success') {
+        setProfiles(result.profiles);
+        // Actualiza el perfil actual sin cambiarlo
+        const updatedProfile = result.profiles[currentProfileIndex];
+        if (updatedProfile) {
+          setProfileName(updatedProfile.name);
+          setTextColor(updatedProfile.textColor);
+          setBackgroundColor(updatedProfile.backgroundColor);
+          setSelectedFont(updatedProfile.fontFamily);
+          setFontSize(parseInt(updatedProfile.fontSize, 10));
+        }
+      } else {
+        Alert.alert('Error', result.message || 'Failed to fetch profiles');
+      }
+    } catch (error) {
+      Alert.alert('Error', error.message || 'An error occurred while fetching profiles');
+    }
+  };
 const loadProfiles = async () => {
   try {
     
@@ -123,7 +191,7 @@ const loadProfiles = async () => {
       // backgroundColor: backgroundColor
       user_id: user_id,
       profile: currentProfileIndex + 1, // Asumiendo que los perfiles están numerados a partir del 1
-      name: profiles[currentProfileIndex]?.name, // Asume que cada perfil tiene un nombre
+      name: profileName, // Asume que cada perfil tiene un nombre
       textColor: textColor,
       fontSize: fontSize.toString(), // Convierte el número a una cadena
       fontFamily: selectedFont,
@@ -136,6 +204,7 @@ const loadProfiles = async () => {
   
       if (result.includes('successfully')) {
         Alert.alert('Success', 'Profile updated successfully.');
+         await updateCurrentProfile(); // Actualiza el perfil actual sin cambiarlo
         // Actualiza la lista de perfiles si es necesario
       } else {
         Alert.alert('Error', 'Failed to update profile.');
@@ -217,7 +286,43 @@ const loadProfiles = async () => {
   
   };
   
- 
+  const createNewProfile = async () => {
+    if (profiles.length >= 5) {
+      Alert.alert('Límite alcanzado', 'No puedes crear más de 5 perfiles.');
+      return;
+    }
+  
+    const user_id = await AsyncStorage.getItem('username');
+    if (!user_id) {
+      Alert.alert('Error', 'User ID not found.');
+      return;
+    }
+  
+    const newProfile = {
+      user_id: user_id,
+      profile: profiles.length + 1, // Asignar el siguiente número de perfil
+      name: 'Nuevo perfil',
+      textColor: '#000000',
+      fontSize: '14',
+      fontFamily: 'Verdana',
+      backgroundColor: '#FFFFFF',
+    };
+  
+    try {
+      const response = await axios.post('https://us-central1-lingua-80a59.cloudfunctions.net/styles', newProfile);
+      const result = response.data;
+  
+      if (result.includes('successfully')) {
+        Alert.alert('Éxito', 'Perfil creado exitosamente.');
+        loadProfiles(); // Recargar los perfiles para incluir el nuevo
+      } else {
+        Alert.alert('Error', 'No se pudo crear el perfil.');
+      }
+    } catch (error) {
+      Alert.alert('Error', error.message || 'Ocurrió un error al crear el perfil.');
+    }
+  };
+  
 
   return (
   
@@ -235,7 +340,7 @@ const loadProfiles = async () => {
           <Ionicons name="create" size={40} color="#000" />
             </View>
 
-
+{/* 
             <View style={styles.profilesContainer}>
   {profiles.map((profile, index) => (
     <TouchableOpacity
@@ -247,6 +352,22 @@ const loadProfiles = async () => {
     </TouchableOpacity>
   ))}
 </View>
+ */}
+ <ScrollView
+  horizontal={true}
+  showsHorizontalScrollIndicator={false}
+  contentContainerStyle={styles.profilesContainer}
+>
+  {profiles.map((profile, index) => (
+    <TouchableOpacity
+      key={index}
+      style={[styles.profileButton, index === currentProfileIndex ? styles.selectedProfile : null]}
+      onPress={() => changeProfile(index)}
+    >
+      <Text style={styles.profileButtonText}>{profile.name}</Text>
+    </TouchableOpacity>
+  ))}
+</ScrollView>
 
 
 
@@ -254,6 +375,18 @@ const loadProfiles = async () => {
 
             <Button title="Guardar Cambios" onPress={savechanges} />
             <Button title="Aplicar" onPress={apply} />
+            <Button
+  title="Crear nuevo perfil"
+  onPress={createNewProfile}
+  disabled={profiles.length >= 5}
+/>
+
+            <TextInput
+  style={styles.textInput}
+  value={profileName}
+  onChangeText={setProfileName}
+  placeholder="Nombre del perfil"
+/>
  
       <ColorPicker
           style={{ width: '60%' }}
