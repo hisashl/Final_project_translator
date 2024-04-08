@@ -48,17 +48,40 @@ export default function EditScreen() {
   const [profileName, setProfileName] = useState('');
 
 
+ //a
+ const [theme, setTheme] = useState('light');
 
- 
 
   useEffect(() => {
     loadProfiles();
     loadCurrentProfile();
-
-
+//a
+    const loadTheme = async () => {
+      try {
+        const savedTheme = await AsyncStorage.getItem('theme');
+        if (savedTheme !== null) {
+          setTheme(savedTheme);
+        }
+      } catch (error) {
+        console.error('Error loading theme:', error);
+      }
+    };
+  
+    loadTheme();
  
   }, []);
 
+  //a
+  const toggleTheme = async () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    try {
+      await AsyncStorage.setItem('theme', newTheme);
+    } catch (error) {
+      console.error('Error saving theme:', error);
+    }
+  };
+  
    
   
 
@@ -288,7 +311,7 @@ const apply = () => {
 
 
   if (!fontsLoaded) {
-    return <View style={styles.centered}><Text>Loading...</Text></View>;
+    return <View><Text>Loading...</Text></View>;
   }
   const handleFontSizeChange = (value) => {
     setFontSize(value);
@@ -346,6 +369,149 @@ const apply = () => {
   };
   
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+const styles = StyleSheet.create({
+  colorInput: {
+    height: 40,
+    width: '80%',
+    borderColor: 'gray',
+    borderWidth: 2,
+    borderRadius: 10,
+    marginLeft: 30,
+    paddingHorizontal: 60,
+    marginBottom: 20, // Espacio después del TextInput
+    marginTop: 20, // Espacio antes del TextInput
+  },
+  navBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+  },
+  navTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: theme === 'light' ? 'black' : 'white',
+  },
+  textInput: {
+    borderRadius: 10,
+    padding: 16,
+    backgroundColor: 'transparent',
+    fontSize: 18,
+    marginVertical: 20, // Espacio vertical entre los componentes
+    color: theme === 'light' ? 'black' : 'white',
+  },
+  colorPickerComponent: {
+    marginVertical: 20, // Agrega un margen vertical entre los componentes del ColorPicker
+  },
+  safeArea: {
+    flex: 1,
+    backgroundColor: theme === 'light' ? '#fff' : '#2E2E2E',
+  },
+  footerMenu: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 16,
+    borderTopWidth: 1,
+    borderColor: '#ddd',
+  },
+  textInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FAF9F6',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginVertical: 10,
+    marginLeft: 10,  // Margen izquierdo
+    marginRight: 10, // Margen derecho
+  },
+  container: {
+    flex: 1,
+    backgroundColor: theme === 'light' ? '#fff' : '#2E2E2E',
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 20, // Espacio vertical para la vista centrada
+  },
+  scrollViewContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20, // Espacio vertical dentro del ScrollView
+  },
+  label: {
+    marginTop: 20, // Espacio antes de cada etiqueta
+    fontSize: 16,
+    color: theme === 'light' ? 'black' : 'white',
+  },
+  slider: {
+    width: '70%',
+    marginVertical: 20, // Espacio vertical para el Slider
+  },
+  picker: { 
+    width: '70%',
+    marginTop: 20, // Espacio antes del Picker
+    marginBottom: 20, // Espacio después del Picker
+    
+  },
+  profilesContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 10,
+  },
+  profileButton: {
+    padding: 10,
+    borderRadius: 5,
+    backgroundColor: '#f0f0f0',
+    
+  },
+  selectedProfile: {
+    backgroundColor: '#c0c0c0',
+  },
+  profileButtonText: {
+    fontSize: 16,
+  },
+  previewText: {
+    textAlign: 'center',
+    marginVertical: 20, // Espacio vertical para el texto de previsualización
+  },
+}); 
+  
+
+
+
+
+
+
+
+
+
+
+
+
   return (
   
   //, { backgroundColor: backgroundColor }
@@ -393,7 +559,8 @@ const apply = () => {
 </ScrollView>
 
 
- 
+<Button title="Cambiar Tema" onPress={toggleTheme} />
+
 
             <Button title="Guardar Cambios" onPress={savechanges} />
             <Button title="Aplicar" onPress={apply} />
@@ -508,110 +675,3 @@ const apply = () => {
   
   );
 }
-
-const styles = StyleSheet.create({
-  colorInput: {
-    height: 40,
-    width: '80%',
-    borderColor: 'gray',
-    borderWidth: 2,
-    borderRadius: 10,
-    marginLeft: 30,
-    paddingHorizontal: 60,
-    marginBottom: 20, // Espacio después del TextInput
-    marginTop: 20, // Espacio antes del TextInput
-  },
-  navBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-  },
-  navTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-  },
-  textInput: {
-    borderRadius: 10,
-    padding: 16,
-    backgroundColor: 'transparent',
-    fontSize: 18,
-    marginVertical: 20, // Espacio vertical entre los componentes
-  },
-  colorPickerComponent: {
-    marginVertical: 20, // Agrega un margen vertical entre los componentes del ColorPicker
-  },
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  footerMenu: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    padding: 16,
-    borderTopWidth: 1,
-    borderColor: '#ddd',
-  },
-  textInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FAF9F6',
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    marginVertical: 10,
-    marginLeft: 10,  // Margen izquierdo
-    marginRight: 10, // Margen derecho
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginVertical: 20, // Espacio vertical para la vista centrada
-  },
-  scrollViewContainer: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 20, // Espacio vertical dentro del ScrollView
-  },
-  label: {
-    marginTop: 20, // Espacio antes de cada etiqueta
-    fontSize: 16,
-  },
-  slider: {
-    width: '70%',
-    marginVertical: 20, // Espacio vertical para el Slider
-  },
-  picker: {
-    width: '70%',
-    marginTop: 20, // Espacio antes del Picker
-    marginBottom: 20, // Espacio después del Picker
-  },
-  profilesContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 10,
-  },
-  profileButton: {
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: '#f0f0f0',
-  },
-  selectedProfile: {
-    backgroundColor: '#c0c0c0',
-  },
-  profileButtonText: {
-    fontSize: 16,
-  },
-  previewText: {
-    textAlign: 'center',
-    marginVertical: 20, // Espacio vertical para el texto de previsualización
-  },
-}); 
-  
