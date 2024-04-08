@@ -8,7 +8,8 @@ export const StyleProvider = ({ children }) => {
     fontSize: 14,
     fontFamily: 'Verdana',
     textColor: '#000000',
-    backgroundColor: '#FFFFFF'
+    backgroundColor: '#FFFFFF',
+    
   });
 
   const updateStyles = (newStyles) => {

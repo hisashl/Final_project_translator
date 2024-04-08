@@ -2,6 +2,7 @@ import { StyleSheet } from 'react-native';
 import { useStyle } from '../StyleContext'
 const useCustomStyles = () => {
   const { styler } = useStyle();
+  const isFontColorWhite = styler.textColor === '#ffffff';
   return StyleSheet.create({
     warningContainer: {
       flexDirection: 'row',
@@ -25,6 +26,16 @@ const useCustomStyles = () => {
       alignItems: 'center',
       backgroundColor: 'rgba(0, 0, 0, 0.05)',
     },
+    place: {
+      marginBottom: 15,
+      borderRadius: 10,
+      // padding: 16,
+      
+      flex: 1,
+      backgroundColor: 'transparent',
+       
+      color: 'gray', // Usa el color de texto de styler o cae de nuevo a negro
+    }, 
     modalView: {
       margin: 20,
       backgroundColor: 'white',
@@ -46,11 +57,10 @@ const useCustomStyles = () => {
       fontSize: 18,
     },
     word: {
- 
+      
       fontFamily: styler.fontFamily,
-     
       fontSize: styler.fontSize || 18, // Usa el tamaño de fuente de styler o cae de nuevo a 18
-      color: styler.textColor || 'black', // Usa el color de texto de styler o cae de nuevo a negro
+      color:  styler.textColor, // Usa el color de texto de styler o cae de nuevo a negro
     },
     modalText: {
       marginBottom: 15,
@@ -66,7 +76,7 @@ const useCustomStyles = () => {
     },
     safeArea: {
       flex: 1,
-      backgroundColor:  styler.backgroundColor,
+      backgroundColor:  'white',
     },
     languageSelectorsContainer: {
       flexDirection: 'row',
@@ -84,7 +94,7 @@ const useCustomStyles = () => {
     },
     container: {
       flex: 1,
-      backgroundColor:  styler.backgroundColor,
+      backgroundColor: 'white',
     },
     image: {
       width: 350, // Ajusta el ancho según tus necesidades
@@ -103,14 +113,14 @@ const useCustomStyles = () => {
     navTitle: {
       fontSize: 22,
       fontWeight: 'bold',
-      color: styler.textColor || 'black' ,
+      color: 'black' ,
     },
     footerMenu: {
       flexDirection: 'row',
       justifyContent: 'space-around',
       padding: 16,
       borderTopWidth: 1,
-      borderColor: styler.textColor || 'black'  ,
+      borderColor:  '#ddd',
       // styler.backgroundColor
     },
     mainContainer: {
@@ -119,11 +129,21 @@ const useCustomStyles = () => {
       justifyContent: 'flex-start',
       paddingTop: 20,
     },
+    textsearch: {
+      marginBottom: 15,
+      borderRadius: 10,
+      marginLeft: 20,
+      flex: 1,
+      backgroundColor: 'transparent',
+      fontSize: 16,
+    },
+    
     
     textInput: {
       marginBottom: 15,
       borderRadius: 10,
       // padding: 16,
+      
       flex: 1,
       backgroundColor: 'transparent',
       fontFamily: styler.fontFamily,
@@ -150,7 +170,8 @@ const useCustomStyles = () => {
       padding: 16,
       borderWidth: 2,
       borderColor: '#ccc',
-      backgroundColor: '#f0f0f0',
+       
+      backgroundColor: styler.backgroundColor,
       borderRadius: 10,
     },    
     
@@ -160,7 +181,7 @@ const useCustomStyles = () => {
       padding: 16,
       borderWidth: 1,
       borderColor: '#ccc',
-      backgroundColor: 'white',
+      backgroundColor: styler.backgroundColor, // Si el color de la fuente es blanco, usa un fondo oscuro
       borderRadius: 10, 
     },
     

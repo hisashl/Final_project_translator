@@ -48,10 +48,19 @@ export default function EditScreen() {
   const [profileName, setProfileName] = useState('');
 
 
+
+ 
+
   useEffect(() => {
     loadProfiles();
     loadCurrentProfile();
+
+
+ 
   }, []);
+
+   
+  
 
   const changeProfile = async (index) => {
     if (profiles && index < profiles.length) {
@@ -217,13 +226,26 @@ const loadProfiles = async () => {
   };
   
     
- const apply = ()=>{
-  updateStyles({ textColor: textColor, inputColor: textColor });
-  updateStyles({ backgroundColor: backgroundColor, inputBackgroundColor: backgroundColor });
-  updateStyles({ fontFamily: selectedFont });
-  updateStyles({ fontSize: fontSize });
-  savechanges();
- }
+//  const apply = ()=>{
+//   updateStyles({ textColor: textColor, inputColor: textColor });
+//   updateStyles({ backgroundColor: backgroundColor, inputBackgroundColor: backgroundColor });
+//   updateStyles({ fontFamily: selectedFont });
+//   updateStyles({ fontSize: fontSize });
+//   savechanges();
+//  }
+const apply = () => {
+  const newStyles = {
+    textColor: textColor,
+    backgroundColor: backgroundColor,
+    fontFamily: selectedFont,
+    fontSize: fontSize,
+  };
+  updateStyles(newStyles);
+  saveChanges();
+};
+
+ 
+
   const fonts = {
     'Roboto': require('../assets/fonts/Roboto-Regular.ttf'),
     'Calibri': require('../assets/fonts/calibri.ttf'),
@@ -326,11 +348,12 @@ const loadProfiles = async () => {
 
   return (
   
-  
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: backgroundColor }]}>
+  //, { backgroundColor: backgroundColor }
+    <SafeAreaView style={[styles.safeArea]}>
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={[styles.container, { backgroundColor: backgroundColor }]}>
+      style={[styles.container]}>
+        
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView contentContainerStyle={styles.scrollViewContainer}>
           <View style={styles.navBar}>
@@ -370,8 +393,7 @@ const loadProfiles = async () => {
 </ScrollView>
 
 
-
-
+ 
 
             <Button title="Guardar Cambios" onPress={savechanges} />
             <Button title="Aplicar" onPress={apply} />
@@ -418,9 +440,13 @@ const loadProfiles = async () => {
           </View>
           <OpacitySlider />
         </ColorPicker>
+        <View style = {[styles.textInputContainer, { backgroundColor: backgroundColor }]}>
+
+      
         <Text style={[styles.previewText, { fontFamily: selectedFont, fontSize, color: textColor }]}>
         LinguaSync: La Sincronía del Lenguaje
         </Text>
+        </View>
         <Text style={styles.label}>Tamaño de Fuente:</Text>
         <Slider
           style={styles.slider}
@@ -527,7 +553,17 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderColor: '#ddd',
   },
-
+  textInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FAF9F6',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginVertical: 10,
+    marginLeft: 10,  // Margen izquierdo
+    marginRight: 10, // Margen derecho
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',

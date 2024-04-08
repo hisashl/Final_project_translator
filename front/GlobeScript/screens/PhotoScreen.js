@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Modal, View, ActivityIndicator, StyleSheet, TextInput, TouchableOpacity,TouchableWithoutFeedback, KeyboardAvoidingView, Platform, ScrollView, SafeAreaView, Button, Image,Text, Alert, Animated, Easing } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import { Ionicons } from '@expo/vector-icons';
- 
+import { useStyle } from './StyleContext'
 import languageOptions from '../lenguajes.json';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
@@ -561,7 +561,7 @@ const PhotoScreen = ({ route  }) => {
     if (!text.trim()) {  // Verifica si el texto está vacío o solo contiene espacios en blanco
       return (
         <View style={styles.sourcee}>
-          <Text style={styles.textInput}>Introduce texto</Text>
+          <Text style={styles.place}>Introduce algo...</Text>
         </View>
       );  // Muestra la leyenda
     }
@@ -628,6 +628,102 @@ const PhotoScreen = ({ route  }) => {
   
    
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const { styler } = useStyle();
+
+  const isFontColorWhite = styler.textColor === '#ffffff';
+  
+
+const pickerSelectStyles = {
+  
+  inputIOS: {
+    fontSize: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderWidth: 2,
+    borderColor: '#61a5ff',
+    borderRadius: 10,
+    color: 'black',
+    paddingRight: 30,
+   
+    backgroundColor:'white',
+    width: 130, 
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 0.5,
+    borderColor: 'gray',
+    borderRadius: 8,
+    color: 'black',
+    paddingRight: 30,
+    backgroundColor: 'white',
+    width: 130, // Adjust the width as needed
+  },
+  iconContainer: {
+    top: 5,
+    right: 15,
+  },
+};
+
+
+
+
+const pickerSelectStylescustom = {
+  
+  inputIOS: {
+    marginLeft: 72.5,
+    fontSize: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderWidth: 2,
+    borderColor: 'gray',
+    borderRadius: 10,
+    color: 'black',
+    paddingRight: 30,
+    backgroundColor: 'white',
+    width: 130, 
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 0.5,
+    borderColor: 'gray',
+    borderRadius: 8,
+    color: 'black',
+    paddingRight: 30,
+    backgroundColor: 'white',
+    width: 130, // Adjust the width as needed
+  },
+  iconContainer: {
+    top: 5,
+    right: 15,
+  },
+};
+
+
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
@@ -653,7 +749,7 @@ const PhotoScreen = ({ route  }) => {
           {showSearch && (
             <View style={styles.searchContainer}>
               <TextInput
-                style={styles.textInput}
+                style={styles.textsearch}
                 onChangeText={setSearch}
                 value={search}
                 placeholder="Buscar palabra"
@@ -704,6 +800,7 @@ const PhotoScreen = ({ route  }) => {
 
 
         {isEditing ? (
+         <View style={styles.sourcee}>
           <TextInput
             style={styles.textInput}
             placeholder="Escribe algo aquí..."
@@ -713,6 +810,7 @@ const PhotoScreen = ({ route  }) => {
             autoFocus
             onBlur={handleSave}
           />
+          </View>
         ) : (
           <TouchableWithoutFeedback onPress={handlePress}>
             <View>{renderTextWithClickableWords(textToTranslate, searchWord)}</View>
@@ -811,74 +909,6 @@ const PhotoScreen = ({ route  }) => {
 
 
 
-
-const pickerSelectStyles = {
-  
-  inputIOS: {
-    fontSize: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderWidth: 2,
-    borderColor: '#61a5ff',
-    borderRadius: 10,
-    color: 'black',
-    paddingRight: 30,
-    backgroundColor: '#FAF9F6',
-    width: 130, 
-  },
-  inputAndroid: {
-    fontSize: 16,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderWidth: 0.5,
-    borderColor: 'gray',
-    borderRadius: 8,
-    color: 'black',
-    paddingRight: 30,
-    backgroundColor: '#FAF9F6',
-    width: 130, // Adjust the width as needed
-  },
-  iconContainer: {
-    top: 5,
-    right: 15,
-  },
-};
-
-
-
-
-const pickerSelectStylescustom = {
-  
-  inputIOS: {
-    marginLeft: 72.5,
-    fontSize: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderWidth: 2,
-    borderColor: 'gray',
-    borderRadius: 10,
-    color: 'black',
-    paddingRight: 30,
-    backgroundColor: '#FAF9F6',
-    width: 130, 
-  },
-  inputAndroid: {
-    fontSize: 16,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderWidth: 0.5,
-    borderColor: 'gray',
-    borderRadius: 8,
-    color: 'black',
-    paddingRight: 30,
-    backgroundColor: '#FAF9F6',
-    width: 130, // Adjust the width as needed
-  },
-  iconContainer: {
-    top: 5,
-    right: 15,
-  },
-};
 export default PhotoScreen;   
   
 

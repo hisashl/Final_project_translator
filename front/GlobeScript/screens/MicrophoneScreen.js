@@ -326,7 +326,7 @@ import { useStyle } from './StyleContext'
       borderRadius: 10,
       color: 'black',
       paddingRight: 30,
-      backgroundColor: '#FAF9F6',
+      backgroundColor: 'white',
       width: 350, 
       
     },
@@ -339,7 +339,7 @@ import { useStyle } from './StyleContext'
       borderRadius: 8,
       color: 'black',
       paddingRight: 30,
-      backgroundColor: '#FAF9F6',
+      backgroundColor: 'white',
       width: 150, // Adjust the width as needed
     },
     iconContainer: {
@@ -352,7 +352,7 @@ import { useStyle } from './StyleContext'
         textInputContainer: {
           flexDirection: 'row',
           alignItems: 'center',
-          backgroundColor: '#fff',
+          backgroundColor: styler.backgroundColor ,
           borderRadius: 10,
           paddingHorizontal: 10,
           paddingVertical: 5,
@@ -477,7 +477,7 @@ import { useStyle } from './StyleContext'
         },
         safeArea: {
           flex: 1,
-          backgroundColor: styler.backgroundColor,
+          backgroundColor: 'white',
         },
         languageSelectorsContainer: {
           marginLeft: 20,
@@ -498,7 +498,7 @@ import { useStyle } from './StyleContext'
         // },
         container: {
           flex: 1,
-          backgroundColor: styler.backgroundColor,
+          backgroundColor: 'white',
         },
         image: {
           width: 350, // Ajusta el ancho según tus necesidades
@@ -508,7 +508,7 @@ import { useStyle } from './StyleContext'
       
         navTitle: {
           fontSize: 22,
-          color: styler.textColor,
+         
           fontWeight: 'bold',
         },
         footerMenu: {
@@ -516,7 +516,7 @@ import { useStyle } from './StyleContext'
           justifyContent: 'space-around',
           padding: 16,
           borderTopWidth: 1,
-          borderColor: styler.textColor || '#ddd',
+          borderColor:  '#ddd',
         },
         mainContainer: {
           flex: 1,

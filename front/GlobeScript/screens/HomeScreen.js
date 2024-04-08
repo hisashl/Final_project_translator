@@ -60,7 +60,7 @@ export default function HomeScreen() {
       right: 16,
       left: 16,
       borderRadius: 10,
-      backgroundColor: styler.backgroundColor, // Use the backgroundColor from styler
+      backgroundColor: 'white', // Use the backgroundColor from styler
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
