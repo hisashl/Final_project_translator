@@ -1,7 +1,9 @@
 import { StyleSheet } from 'react-native';
 import { useStyle } from '../StyleContext'
 const useCustomStyles = () => {
-  const { styler } = useStyle();
+ 
+
+  const { styler, updateStyles, theme, toggleTheme } = useStyle();
   const isFontColorWhite = styler.textColor === '#ffffff';
   return StyleSheet.create({
     warningContainer: {
@@ -25,6 +27,7 @@ const useCustomStyles = () => {
       justifyContent: 'center',
       alignItems: 'center',
       backgroundColor: 'rgba(0, 0, 0, 0.05)',
+      
     },
     place: {
       marginBottom: 15,
@@ -38,7 +41,7 @@ const useCustomStyles = () => {
     }, 
     modalView: {
       margin: 20,
-      backgroundColor: 'white',
+      backgroundColor: theme === 'light' ? '#fff' : '#2E2E2E',
       borderRadius: 20,
       padding: 35,
       alignItems: 'center',
@@ -55,16 +58,18 @@ const useCustomStyles = () => {
       marginTop: 20,
       marginBottom: 15,
       fontSize: 18,
+      color:  theme === 'light' ? styler.textColor : 'white',  // Usa el color de texto de styler o cae de nuevo a negro
     },
     word: {
       
       fontFamily: styler.fontFamily,
       fontSize: styler.fontSize || 18, // Usa el tamaño de fuente de styler o cae de nuevo a 18
-      color:  styler.textColor, // Usa el color de texto de styler o cae de nuevo a negro
+      color:  theme === 'light' ? styler.textColor : 'white',  // Usa el color de texto de styler o cae de nuevo a negro
     },
     modalText: {
       marginBottom: 15,
       textAlign: 'center',
+      color:  theme === 'light' ? 'black' : 'white',  // Usa el color de texto de styler o cae de nuevo a negro
     },
     buttonClose: {
       backgroundColor: '#F194FF',
@@ -76,7 +81,7 @@ const useCustomStyles = () => {
     },
     safeArea: {
       flex: 1,
-      backgroundColor:  'white',
+      backgroundColor: theme === 'light' ? '#fff' : '#2E2E2E',
     },
     languageSelectorsContainer: {
       flexDirection: 'row',
@@ -94,7 +99,7 @@ const useCustomStyles = () => {
     },
     container: {
       flex: 1,
-      backgroundColor: 'white',
+      backgroundColor: theme === 'light' ? '#fff' : '#2E2E2E',
     },
     image: {
       width: 350, // Ajusta el ancho según tus necesidades
@@ -113,7 +118,7 @@ const useCustomStyles = () => {
     navTitle: {
       fontSize: 22,
       fontWeight: 'bold',
-      color: 'black' ,
+      color: theme === 'light' ? 'black' : 'white',
     },
     footerMenu: {
       flexDirection: 'row',
@@ -136,6 +141,7 @@ const useCustomStyles = () => {
       flex: 1,
       backgroundColor: 'transparent',
       fontSize: 16,
+      color: theme === 'light' ? 'black' : 'white',
     },
     
     
@@ -147,8 +153,8 @@ const useCustomStyles = () => {
       flex: 1,
       backgroundColor: 'transparent',
       fontFamily: styler.fontFamily,
-      fontSize: styler.fontSize || 18, // Usa el tamaño de fuente de styler o cae de nuevo a 18
-      color: styler.textColor || 'black', // Usa el color de texto de styler o cae de nuevo a negro
+      fontSize: styler.fontSize , // Usa el tamaño de fuente de styler o cae de nuevo a 18
+      color:  theme === 'light' ? styler.textColor : 'white', // Usa el color de texto de styler o cae de nuevo a negro
     },
     translateButton: {
       backgroundColor: '#1E90FF',
@@ -171,7 +177,9 @@ const useCustomStyles = () => {
       borderWidth: 2,
       borderColor: '#ccc',
        
-      backgroundColor: styler.backgroundColor,
+
+      backgroundColor: theme === 'light' ? styler.backgroundColor : '#2E2E2E',
+
       borderRadius: 10,
     },    
     
@@ -181,21 +189,27 @@ const useCustomStyles = () => {
       padding: 16,
       borderWidth: 1,
       borderColor: '#ccc',
-      backgroundColor: styler.backgroundColor, // Si el color de la fuente es blanco, usa un fondo oscuro
+    
+      backgroundColor: theme === 'light' ? styler.backgroundColor : '#2E2E2E',
       borderRadius: 10, 
     },
-    
     searchContainer: {
       flexDirection: 'row',
-      alignItems: 'right',
+      alignItems: 'center', // Cambia 'right' por 'center' para alinear correctamente los elementos
       marginBottom: 15,
+      
     },
     searchButton: {
       marginRight: 10,
       backgroundColor: '#61a5ff',
       padding: 10,
-      borderRadius: 5,
+      borderRadius: 30, // Aumenta el valor para esquinas más redondeadas
     },
+    searchButtonText: {
+      color: 'white', // Agrega color blanco al texto del botón para que sea visible
+    },
+    
+    
     
   });
 }

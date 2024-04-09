@@ -35,7 +35,7 @@ export default function EditScreen() {
   const [isEditingBackground, setIsEditingBackground] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState('#FFFFFF');
   const [inputBackgroundColor, setInputBackgroundColor] = useState('#FFFFFF');
-  const { updateStyles } = useStyle();
+  
 
  
 
@@ -46,42 +46,15 @@ export default function EditScreen() {
 
 
   const [profileName, setProfileName] = useState('');
-
-
- //a
- const [theme, setTheme] = useState('light');
-
-
-  useEffect(() => {
-    loadProfiles();
-    loadCurrentProfile();
-//a
-    const loadTheme = async () => {
-      try {
-        const savedTheme = await AsyncStorage.getItem('theme');
-        if (savedTheme !== null) {
-          setTheme(savedTheme);
-        }
-      } catch (error) {
-        console.error('Error loading theme:', error);
-      }
-    };
-  
-    loadTheme();
  
-  }, []);
-
-  //a
-  const toggleTheme = async () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    try {
-      await AsyncStorage.setItem('theme', newTheme);
-    } catch (error) {
-      console.error('Error saving theme:', error);
-    }
-  };
+  const { styler, updateStyles, theme, toggleTheme } = useStyle();
   
+ 
+useEffect(() => {
+  loadProfiles();
+  loadCurrentProfile();
+}, []);
+
    
   
 
@@ -264,7 +237,7 @@ const apply = () => {
     fontSize: fontSize,
   };
   updateStyles(newStyles);
-  saveChanges();
+  savechanges();
 };
 
  

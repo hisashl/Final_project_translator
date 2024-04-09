@@ -2,57 +2,41 @@ import React, { useState, useEffect } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
-import EditScreen from './EditScreen'; // Import your EditScreen component
-import TextScreen from './TextScreen'; // Import your TextScreen component
-import PhotoScreen from './PhotoScreen'; // Import your PhotoScreen component
-import MicrophoneScreen from './MicrophoneScreen'; // Import your MicrophoneScreen component
-import { useStyle } from './StyleContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import EditScreen from './EditScreen'; // Asegúrate de que estas rutas sean correctas
+import TextScreen from './TextScreen';
+import PhotoScreen from './PhotoScreen';
+import MicrophoneScreen from './MicrophoneScreen';
+import { useStyle } from './StyleContext'; // Asegúrate de que la ruta de importación sea correcta
+
 
 const Tab = createBottomTabNavigator();
 
 const tabArr = [
-  {
-    route: 'Edit',
-    component: EditScreen,
-    icon: require('../assets/icons/edit_icon.png'), // Path to your edit icon
-  },
-  {
-    route: 'Text',
-    component: TextScreen,
-    icon: require('../assets/icons/text_icon.png'), // Path to your text icon
-  },
-  {
-    route: 'Photo',
-    component: PhotoScreen,
-    icon: require('../assets/icons/camera_icon.png'), // Path to your photo icon
-  },
-  {
-    route: 'Microphone',
-    component: MicrophoneScreen,
-    icon: require('../assets/icons/microphone_icon.png'), // Path to your microphone icon
-  },
+  { route: 'Edit', component: EditScreen, icon: require('../assets/icons/edit_icon.png') },
+  { route: 'Text', component: TextScreen, icon: require('../assets/icons/text_icon.png') },
+  { route: 'Photo', component: PhotoScreen, icon: require('../assets/icons/camera_icon.png') },
+  { route: 'Microphone', component: MicrophoneScreen, icon: require('../assets/icons/microphone_icon.png') },
 ];
 
-// Define a function to create animated styles
 const createAnimatedStyles = (focused) => {
   return useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: withSpring(focused ? 1.3 : 1) }],
-    };
+    return { transform: [{ scale: withSpring(focused ? 1.3 : 1) }] };
   });
 };
 
 export default function HomeScreen() {
-  const { styler } = useStyle();
+  const { styler, theme, toggleTheme } = useStyle();
+ 
 
+  // Define estilos dentro del componente
   const styles = StyleSheet.create({
     iconContainer: {
       flex: 1,
       alignItems: 'center',
-      justifyContent: 'center', // Centrar vertical y horizontalmente
+      justifyContent: 'center',
       paddingTop: 20,
     },
-
     tabBar: {
       height: 60,
       position: 'absolute',
@@ -60,11 +44,13 @@ export default function HomeScreen() {
       right: 16,
       left: 16,
       borderRadius: 10,
-      backgroundColor: 'white', // Use the backgroundColor from styler
+      backgroundColor: theme === 'light' ? '#fff' : '#2E2E2E',
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 10,
+      borderColor: 'white', // Color del contorno
+      borderWidth: .25, // Grosor del contorno
       elevation: 1,
     },
     icon: {
@@ -73,7 +59,10 @@ export default function HomeScreen() {
       resizeMode: 'contain',
     },
     iconFocused: {
-      tintColor: '#007AFF', // Change the color when focused
+      tintColor: '#007AFF',
+    },
+    iconUnfocused: {
+      tintColor: theme === 'light' ? 'black' : 'white',
     },
   });
 
@@ -96,10 +85,7 @@ export default function HomeScreen() {
               return (
                 <View style={styles.iconContainer}>
                   <Animated.View style={animatedStyles}>
-                    <Image
-                      source={item.icon}
-                      style={[styles.icon, focused ? styles.iconFocused : null]}
-                    />
+                    <Image source={item.icon} style={[styles.icon, focused ? styles.iconFocused : styles.iconUnfocused]} />
                   </Animated.View>
                 </View>
               );

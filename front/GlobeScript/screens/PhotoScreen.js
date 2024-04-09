@@ -647,12 +647,8 @@ const PhotoScreen = ({ route  }) => {
 
 
 
-
-  const { styler } = useStyle();
-
-  const isFontColorWhite = styler.textColor === '#ffffff';
-  
-
+  const { styler, updateStyles, theme, toggleTheme } = useStyle();
+ 
 const pickerSelectStyles = {
   
   inputIOS: {
@@ -662,10 +658,9 @@ const pickerSelectStyles = {
     borderWidth: 2,
     borderColor: '#61a5ff',
     borderRadius: 10,
-    color: 'black',
+    color:  theme === 'light' ? 'black' : 'white',
     paddingRight: 30,
-   
-    backgroundColor:'white',
+    backgroundColor: theme === 'light' ? '#fff' : '#2E2E2E',
     width: 130, 
   },
   inputAndroid: {
@@ -675,9 +670,9 @@ const pickerSelectStyles = {
     borderWidth: 0.5,
     borderColor: 'gray',
     borderRadius: 8,
-    color: 'black',
+    color:  theme === 'light' ? 'black' : 'white',
     paddingRight: 30,
-    backgroundColor: 'white',
+    backgroundColor: theme === 'light' ? '#fff' : '#2E2E2E',
     width: 130, // Adjust the width as needed
   },
   iconContainer: {
@@ -699,9 +694,9 @@ const pickerSelectStylescustom = {
     borderWidth: 2,
     borderColor: 'gray',
     borderRadius: 10,
-    color: 'black',
+    color:  theme === 'light' ? 'black' : 'white',
     paddingRight: 30,
-    backgroundColor: 'white',
+    backgroundColor: theme === 'light' ? '#fff' : '#2E2E2E',
     width: 130, 
   },
   inputAndroid: {
@@ -711,9 +706,9 @@ const pickerSelectStylescustom = {
     borderWidth: 0.5,
     borderColor: 'gray',
     borderRadius: 8,
-    color: 'black',
+    color:  theme === 'light' ? 'black' : 'white',
     paddingRight: 30,
-    backgroundColor: 'white',
+    backgroundColor: theme === 'light' ? '#fff' : '#2E2E2E',
     width: 130, // Adjust the width as needed
   },
   iconContainer: {
@@ -746,7 +741,7 @@ const pickerSelectStylescustom = {
             />
           </View>
           
-          {showSearch && (
+          {/* {showSearch && (
             <View style={styles.searchContainer}>
               <TextInput
                 style={styles.textsearch}
@@ -761,7 +756,25 @@ const pickerSelectStylescustom = {
               Buscar trans
             </Text>
             </View>
-          )}
+          )} */}
+          {showSearch && (
+  <View style={styles.searchContainer}>
+    <TextInput
+      style={styles.textsearch}
+      onChangeText={setSearch}
+      value={search}
+      multiline={true}
+      placeholder="Buscar palabra"
+    />
+    <TouchableOpacity style={styles.searchButton} onPress={handleSearchInput}>
+      <Text style={styles.searchButtonText}>Buscar input</Text>
+    </TouchableOpacity>
+    <TouchableOpacity style={styles.searchButton} onPress={handleSearchTrans}>
+      <Text style={styles.searchButtonText}>Buscar trans</Text>
+    </TouchableOpacity>
+  </View>
+)}
+
 
   
           <View style={styles.mainContainer}>

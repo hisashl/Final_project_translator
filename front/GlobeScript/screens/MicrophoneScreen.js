@@ -16,7 +16,7 @@ import { useStyle } from './StyleContext'
     
     const MicrophoneScreen = () => {
       
-      const { styler } = useStyle();
+      const { styler, updateStyles, theme, toggleTheme } = useStyle();
       const [recording, setRecording] = useState(null);
       const [isRecording, setIsRecording] = useState(false);
       const [sound, setSound] = useState(null);
@@ -301,13 +301,26 @@ import { useStyle } from './StyleContext'
       setInputText(prevText => prevText + (prevText ? ' ' : '') + data.transcription);
     } catch (error) {
       console.error('Error en trans:', error);
-      setMessage('Error al obtener la transcripción.');
+      setInputText(' ');
     }
   }
 
-  
-
-
+  const getButtonColor = (isEnabled, originalColor) => {
+    if (isEnabled) {
+      return originalColor;
+    } else {
+      return theme === 'light' ? 'gray' : '#2E2E2E';
+    }
+  };
+  const getMicIconColor = (isRecording, isMicOff) => {
+    if (isRecording) {
+      return 'red';
+    } else if (isMicOff) {
+      return theme === 'light' ? 'black' : 'white';
+    } else {
+      return theme === 'light' ? '#43A2BE' : 'white';
+    }
+  };
 
 
 
@@ -324,9 +337,9 @@ import { useStyle } from './StyleContext'
       borderWidth: 2,
       borderColor: '#61a5ff',
       borderRadius: 10,
-      color: 'black',
+      color: theme === 'light' ? 'black' : 'white',
       paddingRight: 30,
-      backgroundColor: 'white',
+      backgroundColor: theme === 'light' ? '#fff' : '#2E2E2E',
       width: 350, 
       
     },
@@ -337,9 +350,9 @@ import { useStyle } from './StyleContext'
       borderWidth: 0.5,
       borderColor: 'gray',
       borderRadius: 8,
-      color: 'black',
+      color: theme === 'light' ? 'black' : 'white',
       paddingRight: 30,
-      backgroundColor: 'white',
+      backgroundColor: theme === 'light' ? '#fff' : '#2E2E2E',
       width: 150, // Adjust the width as needed
     },
     iconContainer: {
@@ -352,14 +365,17 @@ import { useStyle } from './StyleContext'
         textInputContainer: {
           flexDirection: 'row',
           alignItems: 'center',
-          backgroundColor: styler.backgroundColor ,
+         
+          backgroundColor: theme === 'light' ? styler.backgroundColor : '#2E2E2E',
+           
           borderRadius: 10,
           paddingHorizontal: 10,
           paddingVertical: 5,
           marginVertical: 10,
-          marginLeft: 10,  // Margen izquierdo
-          marginRight: 10, // Margen derecho
+          marginLeft: 10,
+          marginRight: 10,
         },
+        
         
    
         textInput: {
@@ -372,7 +388,7 @@ import { useStyle } from './StyleContext'
           backgroundColor: 'transparent',
           fontFamily: styler.fontFamily,
           fontSize: styler.fontSize || 18, // Usa el tamaño de fuente de styler o cae de nuevo a 18
-          color: styler.textColor, // Usa el color de texto de styler o cae de nuevo a negro
+          color:  theme === 'light' ? styler.textColor : 'white', // Usa el color de texto de styler o cae de nuevo a negro
           textAlignVertical: 'top', // Alinea el texto en la parte superior
         },
         
@@ -405,7 +421,8 @@ import { useStyle } from './StyleContext'
         fileNameText: {
           
           fontWeight: 'bold',
-          color: '#333', // Cambia este color como prefieras
+          
+          color:  theme === 'light' ? 'black' : 'white', 
         },
         timerText: {
           fontSize: 24,
@@ -439,6 +456,7 @@ import { useStyle } from './StyleContext'
           fontSize: 36,
           fontWeight: 'bold',
           marginVertical: 10,
+          color:  theme === 'light' ? 'black' : 'white', 
         },
         audioText: {
           color: 'grey',
@@ -477,7 +495,7 @@ import { useStyle } from './StyleContext'
         },
         safeArea: {
           flex: 1,
-          backgroundColor: 'white',
+          backgroundColor: theme === 'light' ? '#fff' : '#2E2E2E',
         },
         languageSelectorsContainer: {
           marginLeft: 20,
@@ -498,7 +516,7 @@ import { useStyle } from './StyleContext'
         // },
         container: {
           flex: 1,
-          backgroundColor: 'white',
+          backgroundColor: theme === 'light' ? '#fff' : '#2E2E2E',
         },
         image: {
           width: 350, // Ajusta el ancho según tus necesidades
@@ -508,7 +526,7 @@ import { useStyle } from './StyleContext'
       
         navTitle: {
           fontSize: 22,
-         
+          color:  theme === 'light' ? 'black' : 'white', 
           fontWeight: 'bold',
         },
         footerMenu: {
@@ -563,7 +581,7 @@ import { useStyle } from './StyleContext'
   {isLoading ? (
     <ActivityIndicator size="small" color="#000" />
   ) : (
-    <Ionicons name="send" size={24} color={sound && sourceLanguage && audioUri ? "#43A2BE" : "gray"} />
+    <Ionicons name="send" size={24} color={getButtonColor(!isLoading && sound && sourceLanguage && audioUri, "#43A2BE")} />
   )}
 </TouchableOpacity>
 
@@ -572,26 +590,23 @@ import { useStyle } from './StyleContext'
               <View style={styles.footerMenu}>
                   {/* Cancel Button */}
         <TouchableOpacity style={styles.controlButton} onPress={cancelRecording}>
-           <Ionicons name="close" size={40} color="#000" />
+           <Ionicons name="close" size={40} color={theme === 'light' ? '#000' : 'white'} />
          </TouchableOpacity>
          
  {/* Recording/Pause Button */}
  <TouchableOpacity style={styles.controlButton} onPress={recording ? stopRecording : startRecording}>
-    <Ionicons
-      name={isRecording ? 'mic' : 'mic-off'} // mic-off es un ícono comúnmente usado para cuando el micrófono está apagado
-      size={40}
-      color={isRecording ? 'red' : 'grey'} // Color rojo cuando está grabando, gris cuando no
-    />
+ <Ionicons
+  name={isRecording ? 'mic' : 'mic-off'}
+  size={40}
+  color={getMicIconColor(isRecording, !isRecording)}
+/>
+
   </TouchableOpacity>
   
   
      {/* Play/Pause Button */}
      <TouchableOpacity style={styles.controlButton} onPress={playSound} disabled={!sound}>
-          <Ionicons
-            name={isPlaying ? "pause" : "play"}
-            size={40}
-            color={sound ? "#000" : "grey"}
-          />
+     <Ionicons name={isPlaying ? "pause" : "play"} size={40} color={getButtonColor(sound, "#61a5ff")} />
         </TouchableOpacity>
             </View>
               <View style={styles.audioInfoContainer}>
