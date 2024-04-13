@@ -7,8 +7,11 @@ import languageOptions from '../lenguajes.json';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { Camera, FlashMode } from 'expo-camera';
+import { getCensorOption } from './parts/censorConfig';
 import * as FileSystem from 'expo-file-system';
+import {BadWords} from '../BadWord';
 import {firebase} from '../config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import useCustomStyles from './parts/StyleP'; // Ajusta la ruta según necesidad './parts/StyleP';
 const imgDir = FileSystem.documentDirectory + '/images/';
 const ensureDirExist = async () => {
@@ -43,7 +46,8 @@ const PhotoScreen = ({ route  }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const MAX_SIZE = 30 * 1024 * 1024; 
-
+  const [censorOption, setCensorOption] = useState('none');
+  const [censorWords, setCensorWords] = useState([]); // Inicia con las palabras predeterminadas
 
   const selectFileFromFiles = async () => {
     if (showWarning && !dontShowAgain) {
@@ -55,7 +59,6 @@ const PhotoScreen = ({ route  }) => {
       copyToCacheDirectory: true, // Copia el archivo seleccionado al directorio de caché de la aplicación
     });
     
-  
 
 
     if  (result && !result.cancelled && result.assets && result.assets.length > 0)  {
@@ -101,11 +104,15 @@ const PhotoScreen = ({ route  }) => {
       Alert.alert('Permissions required', 'Camera and media library permissions are required to take photos');
     }
   };
+   
   
 
   
   const translateText = async (text, targetLanguage) => {
+
+    
     try {
+       
       const translateApiUrl = 'https://translation.googleapis.com/language/translate/v2';
       const translateApiKey = 'AIzaSyCKwODEaYC4H8aB8maNH537gEWHjmQftAY'; // Reemplaza con tu clave de API de Google Translate
   
@@ -258,6 +265,7 @@ const PhotoScreen = ({ route  }) => {
       Alert.alert('Error', 'Por favor, selecciona los idiomas de origen y destino.');
       return;
     }
+    loadCensorWords();
     setIsTranslating(true);
     const translatedText = await translateText(textToTranslate, targetLanguage); // Usar el idioma de destino seleccionado por el usuario
     if (translatedText) {
@@ -270,6 +278,13 @@ const PhotoScreen = ({ route  }) => {
    setIsTranslating(true);
   
   };
+  
+ 
+  const fetchCensorOption = async () => {
+    const option = await getCensorOption();
+    setCensorOption(option);
+  };
+
   useEffect(() => {
     // Carga de imágenes
     const loadImages = async () => {
@@ -288,6 +303,12 @@ const PhotoScreen = ({ route  }) => {
     if (selectedWord) {
       callCloudFunction(sourcesyn, selectedWord);
     }
+
+
+
+    fetchCensorOption();
+    console.log(censorOption);
+    loadCensorWords();
   }, [route.params?.data, selectedWord]);
   
 
@@ -333,23 +354,52 @@ const PhotoScreen = ({ route  }) => {
       }
     }, 50); // Ajusta la velocidad de la animación según sea necesario
   };
+  // const animatetranslated = (text) => {
+  //   let animatedText = '';
+  //   let index = 0;
+  
+  //   const intervalId = setInterval(() => {
+  //     animatedText += text[index];
+  //     setTranslatedText(animatedText);
+  //     index++;
+  
+  //     if (index === text.length) {
+  //       clearInterval(intervalId);
+  //       setIsTranslating(false); // Desactiva el estado de carga una vez que la animación haya terminado
+      
+  //     }
+  //   }, 50); // Ajusta la velocidad de la animación según sea necesario
+  // };
+
   const animatetranslated = (text) => {
     let animatedText = '';
     let index = 0;
   
     const intervalId = setInterval(() => {
       animatedText += text[index];
-      setTranslatedText(animatedText);
+      // Censurar el texto hasta el último espacio para completar la palabra
+      const lastSpaceIndex = animatedText.lastIndexOf(" ") + 1;
+      fetchCensorOption();
+      if (censorOption === "remove"){
+        const textToDisplay = removeBadWordsFromText(animatedText.substring(0, lastSpaceIndex)) + animatedText.substring(lastSpaceIndex);
+        setTranslatedText(textToDisplay);
+      }
+      if (censorOption === "censor"){
+        const textToDisplay = censorWordsForDisplay(animatedText.substring(0, lastSpaceIndex)) + animatedText.substring(lastSpaceIndex);
+        setTranslatedText(textToDisplay);
+      }
+      else {
+        setTranslatedText(animatedText);
+      }
+      
       index++;
   
       if (index === text.length) {
         clearInterval(intervalId);
         setIsTranslating(false); // Desactiva el estado de carga una vez que la animación haya terminado
-      
       }
     }, 50); // Ajusta la velocidad de la animación según sea necesario
   };
-
 
   const [isEditing, setIsEditing] = useState(false);
   
@@ -366,32 +416,126 @@ const PhotoScreen = ({ route  }) => {
   const handleSave = () => {
     setIsEditing(false);
   };
+  // const getHighlightedText = (text, highlights) => {
+  //   const textWords = text.split(' ');
+  //   const highlightWords = highlights.toLowerCase().split(' ');
+  
+  //   return (
+  //     <View 
+  //     style = {styles.translatedText} 
+  //     > 
+  //     <Text>
+  //       {textWords.map((word, index) => (
+  //         <TouchableOpacity key={index} onPress={() => handleWordPresstrad(word)}>
+  //           <Text
+  //             style={[
+  //               styles.word,
+  //               highlightWords.includes(word.toLowerCase()) ? styles.highlightedText : null,
+  //             ]}
+  //           >
+  //             {word + (index < textWords.length - 1 ? ' ' : '')}
+  //           </Text>
+  //         </TouchableOpacity>
+  //       ))}
+  //     </Text>
+  //     </View>
+  //   );
+  // };
+  
+  
+  // // Función para reemplazar palabras altisonantes visualmente
+  // const censorWordsForDisplay = (word) => {
+  //   const regex = new RegExp(`\\b(${BadWords.join("|")})\\b`, "gi");
+  //   return word.replace(regex, (match) =>
+  //     match[0] + "*".repeat(match.length - 1)
+  //   );
+  // };
+  // const removeBadWordsFromText = (text) => {
+  //   const regex = new RegExp(`\\b(${BadWords.join("|")})\\b`, "gi");
+  //   return text.replace(regex, "");
+  // };
+  // Función para reemplazar visualmente palabras altisonantes
+  async function loadCombinedCensorWords(userID) {
+    // Se asume que userID se obtiene de algún contexto o es pasado como parámetro
+    try {
+      const response = await fetch('https://us-central1-lingua-80a59.cloudfunctions.net/getbadwords', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userID })
+      });
+  
+      const data = await response.json();
+      if (response.ok && data.words) {
+        // Combina las palabras predeterminadas con las personalizadas del usuario, eliminando duplicados
+        return [...new Set([...BadWords, ...data.words])];
+      } else {
+        console.error('Failed to fetch words from the cloud:', data.message);
+        return BadWords;  // Retorna solo las palabras predeterminadas si la petición falla
+      }
+    } catch (error) {
+      console.error('Error loading censor words:', error);
+      return BadWords;  // Retorna solo las palabras predeterminadas si ocurre un error
+    }
+  }
+
+const censorWordsForDisplay = (word) => {
+  const regex = new RegExp(`\\b(${censorWords.join("|")})\\b`, "gi");
+  return word.replace(regex, (match) =>
+    match[0] + "*".repeat(match.length - 1)
+  );
+};
+
+// Función para eliminar palabras altisonantes del texto
+const removeBadWordsFromText = (text) => {
+  const regex = new RegExp(`\\b(${censorWords.join("|")})\\b`, "gi");
+  return text.replace(regex, "");
+};
+
   const getHighlightedText = (text, highlights) => {
     const textWords = text.split(' ');
     const highlightWords = highlights.toLowerCase().split(' ');
   
     return (
-      <View 
-      style = {styles.translatedText} 
-      > 
+    <View style={styles.translatedText}>
       <Text>
-        {textWords.map((word, index) => (
-          <TouchableOpacity key={index} onPress={() => handleWordPresstrad(word)}>
-            <Text
-              style={[
-                styles.word,
-                highlightWords.includes(word.toLowerCase()) ? styles.highlightedText : null,
-              ]}
-            >
-              {word + (index < textWords.length - 1 ? ' ' : '')}
-            </Text>
-          </TouchableOpacity>
-        ))}
+        {textWords.map((word, index) => {
+          let displayWord;
+
+          switch (censorOption) {
+            case 'censor':
+              displayWord = censorWordsForDisplay(word);
+              break;
+            case 'remove':
+              displayWord = removeBadWordsFromText(word);
+              break;
+            default:
+              displayWord = word;
+              break;
+          }
+
+          return displayWord ? (
+            <TouchableOpacity key={index} onPress={() => handleWordPresstrad(word)}>
+              <Text
+                style={[
+                  styles.word,
+                  highlightWords.includes(word.toLowerCase()) ? styles.highlightedText : null,
+                ]}
+              >
+                {displayWord + (index < textWords.length - 1 ? ' ' : '')}
+              </Text>
+            </TouchableOpacity>
+          ) : null;
+        })}
       </Text>
-      </View>
-    );
+    </View>
+  );
   };
   
+const loadCensorWords = async () => {
+  const userID = await AsyncStorage.getItem('username');
+  const combinedWords = await loadCombinedCensorWords(userID);
+  setCensorWords(combinedWords); // Asegúrate de que combinedWords es siempre un arreglo
+};
   
   
   const check = (text, highlight) => {

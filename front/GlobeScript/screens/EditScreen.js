@@ -11,6 +11,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  FlatList,
   SafeAreaView,
   KeyboardAvoidingView, 
   Platform,
@@ -24,6 +25,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Font from 'expo-font';
 import { useFonts } from 'expo-font';
 import axios from 'axios';
+import BadWords from '../BadWord';
 import ColorPicker, { Panel3, Preview, BrightnessSlider, OpacitySlider } from 'reanimated-color-picker';
 
 export default function EditScreen() {
@@ -35,14 +37,16 @@ export default function EditScreen() {
   const [isEditingBackground, setIsEditingBackground] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState('#FFFFFF');
   const [inputBackgroundColor, setInputBackgroundColor] = useState('#FFFFFF');
-  
-
- 
 
   const [profiles, setProfiles] = useState([]); // Estado para almacenar todos los perfiles
   const [currentProfileIndex, setCurrentProfileIndex] = useState(0); // Índice del perfil actualmente seleccionado
 
 
+  
+
+  const [newWord, setNewWord] = useState('');
+  const [censorWords, setCensorWords] = useState([]); // Inicia con las palabras predeterminadas
+  const [censorOption, setCensorOption] = useState('none'); // Opciones: 'none', 'censor', 'remove'
 
 
   const [profileName, setProfileName] = useState('');
@@ -50,10 +54,6 @@ export default function EditScreen() {
   const { styler, updateStyles, theme, toggleTheme } = useStyle();
   
  
-useEffect(() => {
-  loadProfiles();
-  loadCurrentProfile();
-}, []);
 
    
   
@@ -361,6 +361,179 @@ const apply = () => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const loadCensorOption = async () => {
+    try {
+      const savedCensorOption = await AsyncStorage.getItem('censorOption');
+      if (savedCensorOption !== null) {
+        setCensorOption(savedCensorOption);
+      }
+      loadCensorWords();
+    } catch (error) {
+      console.error('Failed to load censor option', error);
+    }
+  };
+
+const handleCensorOptionChange = async (itemValue) => {
+  printCensorWords();
+  loadCensorWords();
+  try {
+    await AsyncStorage.setItem('censorOption', itemValue);
+    setCensorOption(itemValue);
+    console.log(itemValue);
+    
+  } catch (error) {
+    console.error('Failed to save censor option', error);
+  }
+};
+ 
+
+const printCensorWords = async () => {
+  try {
+    const censorWords = await AsyncStorage.getItem('censorWords');
+    if (censorWords !== null) {
+      console.log('Censor Words:', JSON.parse(censorWords));
+    } else {
+      console.log('No censor words stored.');
+    }
+  } catch (error) {
+    console.error('Failed to fetch censor words from AsyncStorage:', error);
+  }
+};
+
+// const handleRemoveWord = async (wordToRemove) => {
+//   const updatedWords = censorWords.filter(word => word !== wordToRemove);
+//   setCensorWords(updatedWords);
+
+//   try {
+//     await AsyncStorage.setItem('censorWords', JSON.stringify(updatedWords));
+//     Alert.alert('Success', `${wordToRemove} has been removed.`);
+//   } catch (error) {
+//     Alert.alert('Error', 'Failed to remove the word.');
+//   }
+// };
+const handleAddWord = async () => {
+
+  if (newWord && !censorWords.includes(newWord.toLowerCase())) {
+    const userID = await AsyncStorage.getItem('username');
+    const updatedWords = [...censorWords, newWord.toLowerCase()];
+    
+    try {
+      // Guarda la nueva lista en AsyncStorage
+      await AsyncStorage.setItem('censorWords', JSON.stringify(updatedWords));
+      
+      // Actualiza el estado local con la nueva lista de palabras
+      setCensorWords(updatedWords);
+
+      // Llamada a la función en la nube para actualizar la base de datos
+      const response = await fetch('https://us-central1-lingua-80a59.cloudfunctions.net/badwords-funct', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userID, words: updatedWords })
+      });
+
+      const result = await response.text(); // Asumimos que la respuesta es texto plano
+
+      if (response.ok && result.includes('successfully')) {
+        Alert.alert('Success', `Word added successfully and cloud list updated: ${result}`);
+      } else {
+        throw new Error(result || 'Failed to update the cloud.');
+      }
+
+      // Limpia el campo de nueva palabra
+      setNewWord('');
+    } catch (error) {
+      Alert.alert('Error', error.message || 'Failed to add the word.');
+    }
+  } else {
+    Alert.alert('Duplicate or Empty', 'That word is already in the list or the input is empty.');
+  }
+};
+
+const handleRemoveWord = async (wordToRemove) => {
+  const updatedWords = censorWords.filter(word => word !== wordToRemove);
+  setCensorWords(updatedWords);
+  const userID = await AsyncStorage.getItem('username');
+  try {
+    await AsyncStorage.setItem('censorWords', JSON.stringify(updatedWords));
+
+    // Aquí hacemos la llamada a la función en la nube para actualizar la base de datos
+    const response = await fetch('https://us-central1-lingua-80a59.cloudfunctions.net/badwords-funct', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userID, words: updatedWords })
+    });
+
+    const result = await response.text(); // Asumimos que la respuesta es texto plano
+
+    if (response.ok && result.includes('successfully')) {
+      Alert.alert('Success', `${wordToRemove} has been removed and list updated in the cloud`);
+    } else {
+      throw new Error(result || 'Failed to update the cloud.');
+    }
+  } catch (error) {
+    Alert.alert('Error', 'Failed to remove the word.');
+  }
+};
+
+const loadCensorWords = async () => {
+   
+  const userID = await AsyncStorage.getItem('username');
+  console.log(userID);
+   
+  try {
+    // Obtener palabras desde AsyncStorage primero
+    const storedWords = await AsyncStorage.getItem('censorWords');
+    let words = storedWords ? JSON.parse(storedWords) : [];
+
+    // Si no hay palabras en AsyncStorage o deseas actualizarlas desde el servidor
+   
+      const response = await fetch('https://us-central1-lingua-80a59.cloudfunctions.net/getbadwords', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userID })
+      });
+      const data = await response.json();
+      console.log(data);
+      if (response.ok && data.words) {
+        words = data.words;
+        // Guardar las palabras actualizadas en AsyncStorage
+        // await AsyncStorage.setItem('censorWords', JSON.stringify(words));
+        setCensorWords(words);
+      } else {
+        console.error('Failed to fetch words from the cloud:', data.message);
+      }
+    
+
+    // Establecer las palabras en el estado o hacer cualquier otra cosa necesaria con las palabras
+    setCensorWords(words);
+  } catch (error) {
+    console.error('Failed to load words:', error);
+  }
+};
+
+useEffect(() => {
+  loadProfiles();
+  loadCurrentProfile();
+   loadCensorOption();
+  
+   loadCensorWords();
+}, []);
+
   
 const styles = StyleSheet.create({
   colorInput: {
@@ -501,6 +674,58 @@ const styles = StyleSheet.create({
           <View style={styles.footerMenu}>
           <Ionicons name="create" size={40} color="#000" />
             </View>
+             
+      <TextInput
+        placeholder="Add a word to censor"
+        value={newWord}
+        onChangeText={setNewWord}
+        style = {styles.textInput}
+      />
+      <Button title="Add Word" onPress={handleAddWord} />
+      <Text>Current Censor Words:</Text>
+      {censorWords.map((word, index) => (
+        <Text key={index}>{word}</Text>
+      ))}
+     <Text style={styles.title}>Censured Words List</Text>
+      <ScrollView style={styles.scrollView}>
+        {censorWords.map((word, index) => (
+          <View key={index} style={styles.wordContainer}>
+            <Text style={styles.wordText}>{word}</Text>
+            <TouchableOpacity 
+              style={styles.removeButton} 
+              onPress={() => handleRemoveWord(word)}
+            >
+              <Text style={styles.removeButtonText}>Remove</Text>
+            </TouchableOpacity>
+          </View>
+        ))}
+      </ScrollView>
+
+            <View>
+              
+  <Text>Modo de censura de palabras altisonantes:</Text>
+  <Picker
+    selectedValue={censorOption}
+    onValueChange={handleCensorOptionChange}
+    style={styler.picker}
+  >
+    <Picker.Item label="Ninguno" value="none" />
+    <Picker.Item label="Censurar con asteriscos" value="censor" />
+    <Picker.Item label="Eliminar palabras" value="remove" />
+  </Picker>
+</View> 
+
+
+
+<Text style={styles.title}>Censured Words List</Text>
+      <ScrollView style={styles.scrollView}>
+        {censorWords.map((word, index) => (
+          <View key={index} style={styles.wordContainer}>
+            <Text style={styles.wordText}>{word}</Text>
+          </View>
+        ))}
+      </ScrollView>
+
 
 {/* 
             <View style={styles.profilesContainer}>
