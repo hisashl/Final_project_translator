@@ -13,9 +13,10 @@ import { useStyle } from './StyleContext'; // Asegúrate de que la ruta de impor
 const Tab = createBottomTabNavigator();
 
 const tabArr = [
+  { route: 'Photo', component: PhotoScreen, icon: require('../assets/icons/camera_icon.png') },
   { route: 'Edit', component: EditScreen, icon: require('../assets/icons/edit_icon.png') },
   { route: 'Text', component: TextScreen, icon: require('../assets/icons/text_icon.png') },
-  { route: 'Photo', component: PhotoScreen, icon: require('../assets/icons/camera_icon.png') },
+  
   { route: 'Microphone', component: MicrophoneScreen, icon: require('../assets/icons/microphone_icon.png') },
 ];
 

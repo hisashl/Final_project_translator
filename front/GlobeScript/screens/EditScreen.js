@@ -18,6 +18,7 @@ import {
   ScrollView,
 } from 'react-native'; 
 import { useStyle  } from './StyleContext';
+
 import { Ionicons, FontAwesome5  } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import Slider from '@react-native-community/slider';
@@ -526,16 +527,38 @@ const loadCensorWords = async () => {
   }
 };
 
-useEffect(() => {
-  loadProfiles();
-  loadCurrentProfile();
-   loadCensorOption();
+// useEffect(() => {
+//   loadProfiles();
+//   loadCurrentProfile();
+//    loadCensorOption();
   
-   loadCensorWords();
-}, []);
+//    loadCensorWords();
+// }, []);
 
   
 const styles = StyleSheet.create({
+  scrollView: {
+    width: '100%',
+    padding: 10,
+  },
+  wordContainer: {
+    flexDirection: 'row', // Cambio clave: Usa flexDirection para alinear ítems en una fila
+    alignItems: 'center', // Alinea verticalmente
+    marginBottom: 5, // Espacio entre items
+    backgroundColor: theme === 'light' ? '#fff' : '#2E2E2E',
+    
+    paddingHorizontal: 10, // Espaciado horizontal dentro de cada ítem
+    paddingVertical: 8, // Espaciado vertical dentro de cada ítem
+    borderRadius: 5, // Bordes redondeados
+  },
+  wordText: {
+    color: theme === 'light' ? 'black' : 'white',
+    flex: 1, // Toma todo el espacio disponible dejando sólo el necesario para el botón
+    fontSize: 16, // Tamaño de fuente
+  },
+  removeButton: {
+    marginLeft: 10, // Espacio entre el texto y el botón
+  },
   colorInput: {
     height: 40,
     width: '80%',
@@ -682,28 +705,25 @@ const styles = StyleSheet.create({
         style = {styles.textInput}
       />
       <Button title="Add Word" onPress={handleAddWord} />
-      <Text>Current Censor Words:</Text>
+     
+     <Text style = {styles.label}>Censured Words List</Text>
+     <ScrollView style={styles.scrollView}>
       {censorWords.map((word, index) => (
-        <Text key={index}>{word}</Text>
+        <View key={index} style={styles.wordContainer}>
+          <Text style={styles.wordText}>{word}</Text>
+          <TouchableOpacity 
+            style={styles.removeButton} 
+            onPress={() => handleRemoveWord(word)}
+          >
+            <Ionicons name="close" size={24} color="red" />
+          </TouchableOpacity>
+        </View>
       ))}
-     <Text style={styles.title}>Censured Words List</Text>
-      <ScrollView style={styles.scrollView}>
-        {censorWords.map((word, index) => (
-          <View key={index} style={styles.wordContainer}>
-            <Text style={styles.wordText}>{word}</Text>
-            <TouchableOpacity 
-              style={styles.removeButton} 
-              onPress={() => handleRemoveWord(word)}
-            >
-              <Text style={styles.removeButtonText}>Remove</Text>
-            </TouchableOpacity>
-          </View>
-        ))}
-      </ScrollView>
+    </ScrollView>
 
             <View>
               
-  <Text>Modo de censura de palabras altisonantes:</Text>
+  <Text style = {styles.label}>Modo de censura de palabras altisonantes:</Text>
   <Picker
     selectedValue={censorOption}
     onValueChange={handleCensorOptionChange}
@@ -715,16 +735,7 @@ const styles = StyleSheet.create({
   </Picker>
 </View> 
 
-
-
-<Text style={styles.title}>Censured Words List</Text>
-      <ScrollView style={styles.scrollView}>
-        {censorWords.map((word, index) => (
-          <View key={index} style={styles.wordContainer}>
-            <Text style={styles.wordText}>{word}</Text>
-          </View>
-        ))}
-      </ScrollView>
+ 
 
 
 {/* 

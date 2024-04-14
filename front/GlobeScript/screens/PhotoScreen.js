@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { Modal, View, ActivityIndicator, StyleSheet, TextInput, TouchableOpacity,TouchableWithoutFeedback, KeyboardAvoidingView, Platform, ScrollView, SafeAreaView, Button, Image,Text, Alert, Animated, Easing } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import { Ionicons } from '@expo/vector-icons';
@@ -259,13 +260,14 @@ const PhotoScreen = ({ route  }) => {
   };
   //setTextToTranslate
   const handleTranslation = async () => {
-    
+   
     
     if (!sourceLanguage || !targetLanguage) {
       Alert.alert('Error', 'Por favor, selecciona los idiomas de origen y destino.');
       return;
     }
     loadCensorWords();
+  
     setIsTranslating(true);
     const translatedText = await translateText(textToTranslate, targetLanguage); // Usar el idioma de destino seleccionado por el usuario
     if (translatedText) {
@@ -283,8 +285,19 @@ const PhotoScreen = ({ route  }) => {
   const fetchCensorOption = async () => {
     const option = await getCensorOption();
     setCensorOption(option);
+    console.log('Censor option:', option);
   };
-
+  
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchCensorOption();
+      console.log(censorOption);
+      loadCensorWords();
+      // La función que quieres ejecutar
+      
+       
+    }, [])
+  );
   useEffect(() => {
     // Carga de imágenes
     const loadImages = async () => {
@@ -303,12 +316,6 @@ const PhotoScreen = ({ route  }) => {
     if (selectedWord) {
       callCloudFunction(sourcesyn, selectedWord);
     }
-
-
-
-    fetchCensorOption();
-    console.log(censorOption);
-    loadCensorWords();
   }, [route.params?.data, selectedWord]);
   
 
@@ -371,36 +378,64 @@ const PhotoScreen = ({ route  }) => {
   //   }, 50); // Ajusta la velocidad de la animación según sea necesario
   // };
 
+  // const animatetranslated = (text) => {
+  //   let animatedText = '';
+  //   let index = 0;
+  
+  //   const intervalId = setInterval(() => {
+  //     animatedText += text[index];
+  //     // Censurar el texto hasta el último espacio para completar la palabra
+  //     const lastSpaceIndex = animatedText.lastIndexOf(" ") + 1;
+  //     fetchCensorOption();
+  //     if (censorOption === "remove"){
+  //       const textToDisplay = removeBadWordsFromText(animatedText.substring(0, lastSpaceIndex)) + animatedText.substring(lastSpaceIndex);
+  //       setTranslatedText(textToDisplay);
+  //     }
+  //     if (censorOption === "censor"){
+  //       const textToDisplay = censorWordsForDisplay(animatedText.substring(0, lastSpaceIndex)) + animatedText.substring(lastSpaceIndex);
+  //       setTranslatedText(textToDisplay);
+  //     }
+  //     else {
+  //       setTranslatedText(animatedText);
+  //     }
+      
+  //     index++;
+  
+  //     if (index === text.length) {
+  //       clearInterval(intervalId);
+  //       setIsTranslating(false); // Desactiva el estado de carga una vez que la animación haya terminado
+  //     }
+  //   }, 50); // Ajusta la velocidad de la animación según sea necesario
+  // }; 
   const animatetranslated = (text) => {
     let animatedText = '';
     let index = 0;
   
     const intervalId = setInterval(() => {
-      animatedText += text[index];
-      // Censurar el texto hasta el último espacio para completar la palabra
-      const lastSpaceIndex = animatedText.lastIndexOf(" ") + 1;
-      fetchCensorOption();
-      if (censorOption === "remove"){
-        const textToDisplay = removeBadWordsFromText(animatedText.substring(0, lastSpaceIndex)) + animatedText.substring(lastSpaceIndex);
-        setTranslatedText(textToDisplay);
-      }
-      if (censorOption === "censor"){
-        const textToDisplay = censorWordsForDisplay(animatedText.substring(0, lastSpaceIndex)) + animatedText.substring(lastSpaceIndex);
-        setTranslatedText(textToDisplay);
-      }
-      else {
-        setTranslatedText(animatedText);
+      animatedText += text[index]; // Incrementalmente añade texto
+      const lastSpaceIndex = animatedText.lastIndexOf(" ") + 1; // Encuentra el último espacio completo
+  
+      let textToDisplay;
+      
+      if (censorOption === "remove") {
+        textToDisplay = removeBadWordsFromText(animatedText.substring(0, lastSpaceIndex)) + animatedText.substring(lastSpaceIndex);
+      } else if (censorOption === "censor") {
+        textToDisplay = censorWordsForDisplay(animatedText.substring(0, lastSpaceIndex)) + animatedText.substring(lastSpaceIndex);
+      } else {
+        textToDisplay = animatedText;
       }
       
+      setTranslatedText(textToDisplay);
       index++;
   
       if (index === text.length) {
         clearInterval(intervalId);
-        setIsTranslating(false); // Desactiva el estado de carga una vez que la animación haya terminado
+        setIsTranslating(false); // Finaliza la animación y el estado de carga
       }
-    }, 50); // Ajusta la velocidad de la animación según sea necesario
+    }, 50);
   };
-
+  
+  
   const [isEditing, setIsEditing] = useState(false);
   
   const [searchWord, setSearchWord] = useState('');
@@ -478,58 +513,186 @@ const PhotoScreen = ({ route  }) => {
     }
   }
 
-const censorWordsForDisplay = (word) => {
-  const regex = new RegExp(`\\b(${censorWords.join("|")})\\b`, "gi");
-  return word.replace(regex, (match) =>
-    match[0] + "*".repeat(match.length - 1)
-  );
-};
+// const censorWordsForDisplay = (word) => {
+//   const regex = new RegExp(`\\b(${censorWords.join("|")})\\b`, "gi");
+//   return word.replace(regex, (match) =>
+//     match[0] + "*".repeat(match.length - 1)
+//   );
+// };
+ 
 
-// Función para eliminar palabras altisonantes del texto
-const removeBadWordsFromText = (text) => {
-  const regex = new RegExp(`\\b(${censorWords.join("|")})\\b`, "gi");
-  return text.replace(regex, "");
-};
+// // Función para eliminar palabras altisonantes del texto
+// const removeBadWordsFromText = (text) => {
+//   const regex = new RegExp(`\\b(${censorWords.join("|")})\\b`, "gi");
+//   return text.replace(regex, "");
+// };
+ // Función para escapar caracteres especiales en regex
+  // Función para escapar caracteres especiales en expresiones regulares
+  const escapeRegExp = (text) => text.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&');
 
-  const getHighlightedText = (text, highlights) => {
-    const textWords = text.split(' ');
-    const highlightWords = highlights.toLowerCase().split(' ');
+  const censorWordsForDisplay = (text) => {
+    // Asegúrate de que censorWords es siempre un arreglo válido
+    if (!Array.isArray(censorWords) || censorWords.length === 0) {
+      return text;
+    }
   
-    return (
-    <View style={styles.translatedText}>
-      <Text>
-        {textWords.map((word, index) => {
-          let displayWord;
-
-          switch (censorOption) {
-            case 'censor':
-              displayWord = censorWordsForDisplay(word);
-              break;
-            case 'remove':
-              displayWord = removeBadWordsFromText(word);
-              break;
-            default:
-              displayWord = word;
-              break;
-          }
-
-          return displayWord ? (
-            <TouchableOpacity key={index} onPress={() => handleWordPresstrad(word)}>
-              <Text
-                style={[
-                  styles.word,
-                  highlightWords.includes(word.toLowerCase()) ? styles.highlightedText : null,
-                ]}
-              >
-                {displayWord + (index < textWords.length - 1 ? ' ' : '')}
-              </Text>
-            </TouchableOpacity>
-          ) : null;
-        })}
-      </Text>
-    </View>
-  );
+    const regexPattern = censorWords.map(word => 
+      word.split(" ").map(part => escapeRegExp(part)).join("\\s+")
+    ).join("|");
+  
+    const regex = new RegExp(`\\b(${regexPattern})\\b`, "gi");
+  
+    return text.replace(regex, (match) =>
+      match[0] + "*".repeat(Math.max(0, match.length - 1))
+    );
   };
+  const removeBadWordsFromText = (text) => {
+    if (!Array.isArray(censorWords) || censorWords.length === 0) {
+      return text;
+    }
+  
+    const regexPattern = censorWords.map(word => 
+      word.split(" ").map(part => escapeRegExp(part)).join("\\s+")
+    ).join("|");
+  
+    const regex = new RegExp(`\\b(${regexPattern})\\b`, "gi");
+  
+    return text.replace(regex, "");
+  };
+    
+  
+
+
+  // const getHighlightedText = (text, highlights) => {
+  //   const textWords = text.split(' ');
+  //   const highlightWords = highlights.toLowerCase().split(' ');
+  
+  //   return (
+  //   <View style={styles.translatedText}>
+  //     <Text>
+  //       {textWords.map((word, index) => {
+  //         let displayWord;
+
+  //         switch (censorOption) {
+  //           case 'censor':
+  //             displayWord = censorWordsForDisplay(word);
+  //             break;
+  //           case 'remove':
+  //             displayWord = removeBadWordsFromText(word);
+  //             break;
+  //           default:
+  //             displayWord = word;
+  //             break;
+  //         }
+
+  //         return displayWord ? (
+  //           <TouchableOpacity key={index} onPress={() => handleWordPresstrad(word)}>
+  //             <Text
+  //               style={[
+  //                 styles.word,
+  //                 highlightWords.includes(word.toLowerCase()) ? styles.highlightedText : null,
+  //               ]}
+  //             >
+  //               {displayWord + (index < textWords.length - 1 ? ' ' : '')}
+  //             </Text>
+  //           </TouchableOpacity>
+  //         ) : null;
+  //       })}
+  //     </Text>
+  //   </View>
+  // );
+  // };
+  const getHighlightedText = (text, highlights) => {
+    // Dividir el texto en palabras y espacios para manejarlos por separado
+    const tokens = text.split(/(\s+)/); // Este regex mantiene los espacios como tokens separados
+    const highlightWords = highlights.toLowerCase().split(' ');
+    
+    return (
+      <View style={styles.translatedText}>
+        <Text>
+          {tokens.map((token, index) => {
+            // Comprueba si el token es un espacio usando RegExp
+            const isSpace = /^\s+$/.test(token);
+  
+            if (isSpace) {
+              // Renderiza el espacio directamente sin tocar ni estilo adicional
+              return <Text key={index}>{token}</Text>;
+            } else {
+              // Procesa y estiliza las palabras
+              let displayWord = token;
+              
+              // Solo aplica la censura si la opción está activada y la palabra está en la lista
+              if (censorOption === 'censor' && highlightWords.includes(token.toLowerCase())) {
+                displayWord = '*'.repeat(token.length);
+              } else if (censorOption === 'remove' && highlightWords.includes(token.toLowerCase())) {
+                // No renderiza nada si la palabra debe ser eliminada
+                return null;
+              }
+  
+              // Envuelve las palabras con TouchableOpacity para manejar toques
+              return (
+                <TouchableOpacity key={index} onPress={() => handleWordPresstrad(token)} style={styles.wordContainer}>
+                  <Text style={[styles.word]}>
+                    {displayWord}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          })}
+        </Text>
+      </View>
+    );
+  };
+  
+  // const getHighlightedText = (text, highlights) => {
+  //   // Dividir el texto en palabras y espacios para manejarlos por separado
+  //   const tokens = text.split(/(\s+)/); // Este regex mantiene los espacios como tokens separados
+  //   const highlightWords = highlights.toLowerCase().split(' ');
+  
+  //   return (
+  //     <View style={styles.translatedText}>
+  //       <Text>
+  //         {tokens.map((token, index) => {
+  //           // Comprueba si el token es un espacio usando RegExp
+  //           const isSpace = /^\s+$/.test(token);
+  
+  //           if (isSpace) {
+  //             // Renderiza el espacio directamente sin tocar ni estilo adicional
+  //             return <Text key={index}>{token}</Text>;
+  //           } else {
+  //             // Procesa y estiliza las palabras
+  //             let displayWord;
+  //             switch (censorOption) {
+  //               case 'censor':
+  //                 displayWord = censorWordsForDisplay(token);
+  //                 break;
+  //               case 'remove':
+  //                 displayWord = removeBadWordsFromText(token);
+  //                 break;
+  //               default:
+  //                 displayWord = token;
+  //                 break;
+  //             }
+  
+  //             // Determina si la palabra debe ser resaltada
+  //             const isHighlighted = highlightWords.includes(token.toLowerCase());
+  //             const textStyle = isHighlighted ? styles.highlightedText : null;
+  
+  //             // Envuelve las palabras con TouchableOpacity para manejar toques
+  //             return (
+  //               <TouchableOpacity key={index} onPress={() => handleWordPresstrad(token)} style={styles.wordContainer}>
+  //                 <Text style={[styles.word, textStyle]}>
+  //                   {displayWord}
+  //                 </Text>
+  //               </TouchableOpacity>
+  //             );
+  //           }
+  //         })}
+  //       </Text>
+  //     </View>
+  //   );
+  // };
+  
   
 const loadCensorWords = async () => {
   const userID = await AsyncStorage.getItem('username');
