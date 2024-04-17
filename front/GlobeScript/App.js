@@ -18,6 +18,7 @@ import { StyleProvider } from './screens/StyleContext';
 import MicrophoneScreen from './screens/MicrophoneScreen';
 import Synonyms from './screens/synonyms';
 import EditScreen from './screens/EditScreen';
+import StoredText from './screens/StoredText'
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 export default function App() {
@@ -42,6 +43,7 @@ export default function App() {
         <Stack.Screen options = {{headerShown: false}} name="Verification" component={Verification} />
         <Stack.Screen options = {{headerShown: false}} name="Success" component={Success} />
         <Stack.Screen options = {{headerShown: false}} name="NewPw" component={NewPw} /> 
+        <Stack.Screen options = {{headerShown: false}} name="Stored" component={StoredText  }/>
        
         </Stack.Navigator>
         </StyleProvider>

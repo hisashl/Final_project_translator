@@ -1,4 +1,4 @@
-import React, { useState, useEffect }
+import React, { useCallback, useState, useEffect }
 from 'react';
 import {
   Keyboard,
@@ -18,7 +18,7 @@ import {
   ScrollView,
 } from 'react-native'; 
 import { useStyle  } from './StyleContext';
-
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons, FontAwesome5  } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import Slider from '@react-native-community/slider';
@@ -54,7 +54,60 @@ export default function EditScreen() {
  
   const { styler, updateStyles, theme, toggleTheme } = useStyle();
   
- 
+  const loadCensorOption = async () => {
+    try {
+      const savedCensorOption = await AsyncStorage.getItem('censorOption');
+      if (savedCensorOption !== null) {
+        setCensorOption(savedCensorOption);
+      }
+      loadCensorWords();
+    } catch (error) {
+      console.error('Failed to load censor option', error);
+    }
+  };
+  
+const loadCensorWords = async () => {
+   
+  const userID = await AsyncStorage.getItem('username');
+  console.log(userID);
+   
+  try {
+    // Obtener palabras desde AsyncStorage primero
+    const storedWords = await AsyncStorage.getItem('censorWords');
+    let words = storedWords ? JSON.parse(storedWords) : [];
+
+    // Si no hay palabras en AsyncStorage o deseas actualizarlas desde el servidor
+   
+      const response = await fetch('https://us-central1-lingua-80a59.cloudfunctions.net/getbadwords', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userID })
+      });
+      const data = await response.json();
+      console.log(data);
+      if (response.ok && data.words) {
+        words = data.words;
+        // Guardar las palabras actualizadas en AsyncStorage
+        // await AsyncStorage.setItem('censorWords', JSON.stringify(words));
+        setCensorWords(words);
+      } else {
+        console.error('Failed to fetch words from the cloud:', data.message);
+      }
+    
+
+    // Establecer las palabras en el estado o hacer cualquier otra cosa necesaria con las palabras
+    setCensorWords(words);
+  } catch (error) {
+    console.error('Failed to load words:', error);
+  }
+};
+  
+ useEffect(() => {
+  loadProfiles();
+  loadCurrentProfile();
+  loadCensorOption();
+  loadCensorWords();
+}, []);
 
    
   
@@ -377,17 +430,6 @@ const apply = () => {
 
 
 
-  const loadCensorOption = async () => {
-    try {
-      const savedCensorOption = await AsyncStorage.getItem('censorOption');
-      if (savedCensorOption !== null) {
-        setCensorOption(savedCensorOption);
-      }
-      loadCensorWords();
-    } catch (error) {
-      console.error('Failed to load censor option', error);
-    }
-  };
 
 const handleCensorOptionChange = async (itemValue) => {
   printCensorWords();
@@ -491,51 +533,8 @@ const handleRemoveWord = async (wordToRemove) => {
   }
 };
 
-const loadCensorWords = async () => {
-   
-  const userID = await AsyncStorage.getItem('username');
-  console.log(userID);
-   
-  try {
-    // Obtener palabras desde AsyncStorage primero
-    const storedWords = await AsyncStorage.getItem('censorWords');
-    let words = storedWords ? JSON.parse(storedWords) : [];
 
-    // Si no hay palabras en AsyncStorage o deseas actualizarlas desde el servidor
-   
-      const response = await fetch('https://us-central1-lingua-80a59.cloudfunctions.net/getbadwords', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userID })
-      });
-      const data = await response.json();
-      console.log(data);
-      if (response.ok && data.words) {
-        words = data.words;
-        // Guardar las palabras actualizadas en AsyncStorage
-        // await AsyncStorage.setItem('censorWords', JSON.stringify(words));
-        setCensorWords(words);
-      } else {
-        console.error('Failed to fetch words from the cloud:', data.message);
-      }
-    
 
-    // Establecer las palabras en el estado o hacer cualquier otra cosa necesaria con las palabras
-    setCensorWords(words);
-  } catch (error) {
-    console.error('Failed to load words:', error);
-  }
-};
-
-// useEffect(() => {
-//   loadProfiles();
-//   loadCurrentProfile();
-//    loadCensorOption();
-  
-//    loadCensorWords();
-// }, []);
-
-  
 const styles = StyleSheet.create({
   scrollView: {
     width: '100%',
@@ -700,6 +699,7 @@ const styles = StyleSheet.create({
              
       <TextInput
         placeholder="Add a word to censor"
+        placeholderTextColor={theme === 'light' ? "#888" : 'gray'}
         value={newWord}
         onChangeText={setNewWord}
         style = {styles.textInput}
@@ -784,6 +784,7 @@ const styles = StyleSheet.create({
   value={profileName}
   onChangeText={setProfileName}
   placeholder="Nombre del perfil"
+  placeholderTextColor={theme === 'light' ? "#888" : 'gray'}
 />
  
       <ColorPicker

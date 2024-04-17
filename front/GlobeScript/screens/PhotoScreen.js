@@ -10,6 +10,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import { Camera, FlashMode } from 'expo-camera';
 import { getCensorOption } from './parts/censorConfig';
 import * as FileSystem from 'expo-file-system';
+import { useNavigation } from '@react-navigation/native'; 
 import {BadWords} from '../BadWord';
 import {firebase} from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -31,7 +32,7 @@ const placeholder = {
 
 const PhotoScreen = ({ route  }) => {
   const styles = useCustomStyles();
-
+  const navigation = useNavigation();
   const [showWarning, setShowWarning] = useState(true);
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
@@ -311,12 +312,13 @@ const PhotoScreen = ({ route  }) => {
     if (route.params?.data) {
       animateText(route.params.data);
     }
-  
+   
     // Llama a callCloudFunction cuando selectedWord cambia
     if (selectedWord) {
       callCloudFunction(sourcesyn, selectedWord);
     }
   }, [route.params?.data, selectedWord]);
+  
   
 
   const handleImagePress = () => {
@@ -932,7 +934,21 @@ const loadCensorWords = async () => {
     setModalVisible(true);
   };
   
-  
+  const heartfunct = () => {
+
+    if (heartColor === '#D3D3D3'){
+    setHeartColor( '#FF0000');
+    navigation.navigate('Stored',  { text: translatedText });}
+    else {
+
+      setHeartColor( '#D3D3D3');
+    }
+   
+    
+
+
+
+  }
    
 
 
@@ -1044,7 +1060,7 @@ const pickerSelectStylescustom = {
               name="heart"
               size={24}
               color={heartColor}
-              onPress={() => setHeartColor(heartColor === '#D3D3D3' ? '#FF0000' : '#D3D3D3')}
+              onPress={heartfunct}
             />
           </View>
           

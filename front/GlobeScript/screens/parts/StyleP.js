@@ -14,7 +14,9 @@ const useCustomStyles = () => {
     highlightedText: {
       backgroundColor: 'gray',
     },
-    
+    colorth: {
+        // Usa el color de texto de styler o cae de nuevo a negro
+    },
     checkbox: {
       marginRight: 10,
     },
@@ -54,12 +56,26 @@ const useCustomStyles = () => {
       shadowRadius: 4,
       elevation: 5,
     },
+    
+    wordings:{
+      // marginTop: 20,
+      // marginBottom: 15,
+      fontSize: 18,
+      color:  theme === 'li8ht' ? styler.textColor : 'white',  // Usa el color de texto de styler o cae de nuevo a negro
+    },
     wording:{
       marginTop: 20,
       marginBottom: 15,
-      fontSize: 18,
+      fontSize: 16,
       color:  theme === 'light' ? styler.textColor : 'white',  // Usa el color de texto de styler o cae de nuevo a negro
     },
+    titlesave:{
+      marginTop: 20,
+      marginBottom: 15,
+      fontSize: 24,
+      color:  theme === 'light' ? styler.textColor : 'white',  // Usa el color de texto de styler o cae de nuevo a negro
+    },
+
     word: {
       
       fontFamily: styler.fontFamily,
@@ -133,6 +149,12 @@ const useCustomStyles = () => {
       paddingHorizontal: 20,
       justifyContent: 'flex-start',
       paddingTop: 20,
+    },
+    multilineInput: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 20,
     },
     textsearch: {
       marginBottom: 15,
