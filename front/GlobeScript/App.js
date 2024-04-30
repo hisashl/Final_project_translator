@@ -19,6 +19,7 @@ import MicrophoneScreen from './screens/MicrophoneScreen';
 import Synonyms from './screens/synonyms';
 import EditScreen from './screens/EditScreen';
 import StoredText from './screens/StoredText'
+import ShowText from './screens/ShowText';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 export default function App() {
@@ -37,7 +38,7 @@ export default function App() {
         <Stack.Screen options = {{headerShown: false}} name="Photo" component = {PhotoScreen}  />
         <Stack.Screen options = {{headerShown: false}} name="Microphone" component = {MicrophoneScreen} /> 
         <Stack.Screen options = {{headerShown: false}} name="Edit" component = {EditScreen} />
-        
+        <Stack.Screen options = {{headerShown: false}} name="ShowText" component = {ShowText} />
         <Stack.Screen options = {{headerShown: false}} name="Registro" component={Registro} />
         <Stack.Screen options = {{headerShown: false}} name="Mail" component={Mail} />
         <Stack.Screen options = {{headerShown: false}} name="Verification" component={Verification} />

@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, StatusBar } from 'react-native';
 import { useStyle } from '../StyleContext'
 const useCustomStyles = () => {
  
@@ -56,7 +56,12 @@ const useCustomStyles = () => {
       shadowRadius: 4,
       elevation: 5,
     },
-    
+    speakerIcon: {
+      position: 'absolute',
+      right: 30,
+      top: 15,
+    },
+  
     wordings:{
       // marginTop: 20,
       // marginBottom: 15,
@@ -136,8 +141,21 @@ const useCustomStyles = () => {
       fontWeight: 'bold',
       color: theme === 'light' ? 'black' : 'white',
     },
+    navdescription: {
+      fontSize: 30,
+      fontWeight: 'bold',
+      color: theme === 'light' ? 'black' : 'white',
+    },
     footerMenu: {
       flexDirection: 'row',
+      justifyContent: 'space-around',
+      padding: 16,
+      borderTopWidth: 1,
+      borderColor:  '#ddd',
+      // styler.backgroundColor
+    },
+    footershowtext: {
+      
       justifyContent: 'space-around',
       padding: 16,
       borderTopWidth: 1,
@@ -163,6 +181,18 @@ const useCustomStyles = () => {
       flex: 1,
       backgroundColor: 'transparent',
       fontSize: 16,
+      color: theme === 'light' ? 'black' : 'white',
+    },
+    textdescription: {
+      marginBottom: 15,
+      borderRadius: 10,
+      marginLeft: 20,
+      flex: 1,
+      backgroundColor: 'transparent',
+      fontSize: 20,
+
+      fontWeight: 'bold',
+
       color: theme === 'light' ? 'black' : 'white',
     },
     
@@ -205,6 +235,7 @@ const useCustomStyles = () => {
       borderRadius: 10,
     },    
     
+    
     sourcee: {
       fontSize: 18,
       marginBottom: 20,
@@ -231,7 +262,25 @@ const useCustomStyles = () => {
       color: 'white', // Agrega color blanco al texto del botón para que sea visible
     },
     
+    title: {
+      fontWeight: 'bold',
+      alignSelf: 'center',
+      paddingVertical: 10,
+    },
+    root: {
+      flex: 1,
+      marginTop: StatusBar.currentHeight || 0,
+      backgroundColor: '#eaeaea',
+    },
+    editor: {
+      flex: 1,
+      padding: 0,
     
+      borderWidth: 1,
+      marginHorizontal: 30,
+      marginVertical: 5,
+   
+    },
     
   });
 }

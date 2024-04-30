@@ -48,6 +48,8 @@
     "react-native-animatable": "^1.4.0",
     "react-native-audio": "^4.3.0",
     "react-native-camera": "^4.2.1",
+    "react-native-cn-quill": "^0.7.18",
+    "react-native-cn-richtext-editor": "^1.0.43",
     "react-native-color-picker": "^0.6.0",
     "react-native-color-wheel": "^0.1.7",
     "react-native-crypto": "^2.2.0",

@@ -3,6 +3,7 @@ from 'react';
 import {
   Keyboard,
   TouchableWithoutFeedback,
+
   ActivityIndicator,
   StyleSheet,
   View,
@@ -22,48 +23,49 @@ import { Ionicons } from '@expo/vector-icons';
 import useCustomStyles from './parts/StyleP'; // Ajusta la ruta según necesidad './parts/StyleP';
 import { Picker } from '@react-native-picker/picker';
 import { useStyle } from './StyleContext'
+import { useNavigation } from '@react-navigation/native'; 
 
 const StoredText = ({ route  }) => {
-    
-    const { styler, updateStyles, theme, toggleTheme } = useStyle();
-    const styles = useCustomStyles();
-    const initialText = route.params.text; // Asume que 'text' es la clave correcta
+  const navigation = useNavigation();
+  const { styler, updateStyles, theme } = useStyle();
+  const styles = useCustomStyles();
 
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [text, setText] =  useState(initialText);  // Asumiendo que el texto se pasa como 'text' en route.params
-    const [userID, setUserID] =  useState('');
+  // Intenta obtener el texto de route.params o usa un string vacío como valor por defecto
+  const initialText = route.params?.text ?? '';
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [text, setText] = useState(initialText);
+  const [userID, setUserID] = useState('');
 
-    
-    useEffect(() => {
-      const loaduser = async () => {
-        try {
-          const userId = await AsyncStorage.getItem('username');
-          setUserID(userId);
-        } catch (error) {
-          console.error('Error retrieving user ID:');
-        }
-      }
+  useEffect(() => {
+      const loadUser = async () => {
+          try {
+              const userId = await AsyncStorage.getItem('username');
+              setUserID(userId);
+          } catch (error) {
+              console.error('Error retrieving user ID:', error);
+          }
+      };
 
-      loaduser();
-    
+      loadUser();
+  }, []);
 
-    });
-    const checkAndSave = async () => {
-      if (title.length > 30) {
+  const checkAndSave = async () => {
+      if (!title) {
+          Alert.alert("Error", "Ingresa un titulo");
+          return;
+      } else if (title.length > 30) {
           Alert.alert("Error", "El título no puede tener más de 30 caracteres.");
           return;
       }
-      if (title.length < 1) {
-          Alert.alert("Error", "Ingresa un titulo valido");
-          return;
-      }
-      if (description.length > 255) {
+
+      if (!description) {
+          setDescription(" ");
+      } else if (description.length > 255) {
           Alert.alert("Error", "La descripción no puede tener más de 255 caracteres.");
           return;
       }
-      console.log({userID});
-      // Verificar la cantidad de documentos existentes
+
       try {
           const response = await fetch('https://us-central1-lingua-80a59.cloudfunctions.net/list_documents', {
               method: 'POST',
@@ -71,15 +73,14 @@ const StoredText = ({ route  }) => {
               body: JSON.stringify({ user_id: userID })
           });
           const data = await response.json();
-          
           if (!response.ok) throw new Error(data.message || "Failed to fetch documents");
-  
+
           if (data.length >= 10) {
               Alert.alert("Error", "Ya has alcanzado el límite de 10 documentos.");
+              navigation.navigate('Texts');
               return;
           }
-  
-          // Si hay menos de 10 documentos, procede a guardar el nuevo documento
+
           const saveResponse = await fetch('https://us-central1-lingua-80a59.cloudfunctions.net/documents', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -87,20 +88,19 @@ const StoredText = ({ route  }) => {
                   user_id: userID,
                   title: title,
                   description: description,
-                  text: text // Asumiendo que también se envía un texto
+                  text: text,
+                  document_id: data.length+1,
               })
           });
-  
+
           const saveResult = await saveResponse.json();
           if (!saveResponse.ok) throw new Error(saveResult.message || "Failed to save document");
-  
+
           Alert.alert("Éxito", "Documento guardado exitosamente!");
-  
       } catch (error) {
           Alert.alert("Error", error.message || "An error occurred");
       }
   };
-  
     return (
       <SafeAreaView style={[styles.safeArea]}>
       <KeyboardAvoidingView

@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Alert, Image, View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { useNavigation } from '@react-navigation/native'; 
+    import { useNavigation } from '@react-navigation/native'; 
 import axios from 'axios';
 
 export default function Verification({ route }) {
