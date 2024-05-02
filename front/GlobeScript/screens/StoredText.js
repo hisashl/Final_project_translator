@@ -16,6 +16,7 @@ import {
   SafeAreaView,
   KeyboardAvoidingView, 
   Platform,
+
   ScrollView,
 } from 'react-native'; 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -26,6 +27,10 @@ import { useStyle } from './StyleContext'
 import { useNavigation } from '@react-navigation/native'; 
 
 const StoredText = ({ route  }) => {
+  
+
+
+
   const navigation = useNavigation();
   const { styler, updateStyles, theme } = useStyle();
   const styles = useCustomStyles();
@@ -43,7 +48,7 @@ const StoredText = ({ route  }) => {
               const userId = await AsyncStorage.getItem('username');
               setUserID(userId);
           } catch (error) {
-              console.error('Error retrieving user ID:', error);
+             // console.error('Error retrieving user ID:', error);
           }
       };
 
@@ -149,6 +154,7 @@ const StoredText = ({ route  }) => {
                   </View>
                   
                 <Button title="Checar y guardar" onPress={checkAndSave} />
+
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>

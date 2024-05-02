@@ -34,7 +34,7 @@ const placeholder = {
 
 const PhotoScreen = ({ route  }) => {
   
- 
+  const [corrector, setCorrector] = useState(false);
   const styles = useCustomStyles();
   const navigation = useNavigation();
   const [showWarning, setShowWarning] = useState(true);
@@ -50,6 +50,7 @@ const PhotoScreen = ({ route  }) => {
   const [definition, setDefinition] = useState('');
   const [synonyms, setSynonyms] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
+  const [modalerrors, setModalerrors] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const MAX_SIZE = 30 * 1024 * 1024; 
   const [censorOption, setCensorOption] = useState('none');
@@ -201,7 +202,7 @@ const PhotoScreen = ({ route  }) => {
       },
       (error) => {
         // Manejar errores de carga
-        console.error('Error al subir la imagen:', error);
+        //console.error('Error al subir la imagen:', error);
         Alert.alert('Error', 'Error al subir la imagen: ' + error.message);
         animateText(ErrorMessage);
       },
@@ -253,10 +254,10 @@ const PhotoScreen = ({ route  }) => {
                
             }
           } else {
-            console.error('Error:', visionResponse.status, await visionResponse.text());
+            //console.error('Error:', visionResponse.status, await visionResponse.text());
           }
         } catch (error) {
-          console.error('Error:', error);
+          //console.error('Error:', error);
         }
       }
     );
@@ -310,6 +311,7 @@ const PhotoScreen = ({ route  }) => {
     }, [])
   );
   useEffect(() => {
+    loadCorrector();
     // Carga de imágenes
     const loadImages = async () => {
       await ensureDirExist();
@@ -373,52 +375,7 @@ const PhotoScreen = ({ route  }) => {
       }
     }, 50); // Ajusta la velocidad de la animación según sea necesario
   };
-  // const animatetranslated = (text) => {
-  //   let animatedText = '';
-  //   let index = 0;
-  
-  //   const intervalId = setInterval(() => {
-  //     animatedText += text[index];
-  //     setTranslatedText(animatedText);
-  //     index++;
-  
-  //     if (index === text.length) {
-  //       clearInterval(intervalId);
-  //       setIsTranslating(false); // Desactiva el estado de carga una vez que la animación haya terminado
-      
-  //     }
-  //   }, 50); // Ajusta la velocidad de la animación según sea necesario
-  // };
-
-  // const animatetranslated = (text) => {
-  //   let animatedText = '';
-  //   let index = 0;
-  
-  //   const intervalId = setInterval(() => {
-  //     animatedText += text[index];
-  //     // Censurar el texto hasta el último espacio para completar la palabra
-  //     const lastSpaceIndex = animatedText.lastIndexOf(" ") + 1;
-  //     fetchCensorOption();
-  //     if (censorOption === "remove"){
-  //       const textToDisplay = removeBadWordsFromText(animatedText.substring(0, lastSpaceIndex)) + animatedText.substring(lastSpaceIndex);
-  //       setTranslatedText(textToDisplay);
-  //     }
-  //     if (censorOption === "censor"){
-  //       const textToDisplay = censorWordsForDisplay(animatedText.substring(0, lastSpaceIndex)) + animatedText.substring(lastSpaceIndex);
-  //       setTranslatedText(textToDisplay);
-  //     }
-  //     else {
-  //       setTranslatedText(animatedText);
-  //     }
-      
-  //     index++;
-  
-  //     if (index === text.length) {
-  //       clearInterval(intervalId);
-  //       setIsTranslating(false); // Desactiva el estado de carga una vez que la animación haya terminado
-  //     }
-  //   }, 50); // Ajusta la velocidad de la animación según sea necesario
-  // }; 
+   
   const animatetranslated = (text) => {
     let animatedText = '';
     let index = 0;
@@ -463,44 +420,7 @@ const PhotoScreen = ({ route  }) => {
   const handleSave = () => {
     setIsEditing(false);
   };
-  // const getHighlightedText = (text, highlights) => {
-  //   const textWords = text.split(' ');
-  //   const highlightWords = highlights.toLowerCase().split(' ');
-  
-  //   return (
-  //     <View 
-  //     style = {styles.translatedText} 
-  //     > 
-  //     <Text>
-  //       {textWords.map((word, index) => (
-  //         <TouchableOpacity key={index} onPress={() => handleWordPresstrad(word)}>
-  //           <Text
-  //             style={[
-  //               styles.word,
-  //               highlightWords.includes(word.toLowerCase()) ? styles.highlightedText : null,
-  //             ]}
-  //           >
-  //             {word + (index < textWords.length - 1 ? ' ' : '')}
-  //           </Text>
-  //         </TouchableOpacity>
-  //       ))}
-  //     </Text>
-  //     </View>
-  //   );
-  // };
-  
-  
-  // // Función para reemplazar palabras altisonantes visualmente
-  // const censorWordsForDisplay = (word) => {
-  //   const regex = new RegExp(`\\b(${BadWords.join("|")})\\b`, "gi");
-  //   return word.replace(regex, (match) =>
-  //     match[0] + "*".repeat(match.length - 1)
-  //   );
-  // };
-  // const removeBadWordsFromText = (text) => {
-  //   const regex = new RegExp(`\\b(${BadWords.join("|")})\\b`, "gi");
-  //   return text.replace(regex, "");
-  // };
+   
   // Función para reemplazar visualmente palabras altisonantes
   async function loadCombinedCensorWords(userID) {
     // Se asume que userID se obtiene de algún contexto o es pasado como parámetro
@@ -516,11 +436,11 @@ const PhotoScreen = ({ route  }) => {
         // Combina las palabras predeterminadas con las personalizadas del usuario, eliminando duplicados
         return [...new Set([...BadWords, ...data.words])];
       } else {
-        console.error('Failed to fetch words from the cloud:', data.message);
+        //console.error('Failed to fetch words from the cloud:', data.message);
         return BadWords;  // Retorna solo las palabras predeterminadas si la petición falla
       }
     } catch (error) {
-      console.error('Error loading censor words:', error);
+      //console.error('Error loading censor words:', error);
       return BadWords;  // Retorna solo las palabras predeterminadas si ocurre un error
     }
   }
@@ -831,10 +751,107 @@ const PhotoScreen = ({ route  }) => {
 
 //   return <View style={styles.translatedText}><Text>{segments}</Text></View>;
 // };
+const [corrections, setCorrections] = useState({});
 
 
+
+const loadCorrector = async () => {
+  const option  = await AsyncStorage.getItem('corrector');
+  setCorrector(option);
+  console.log(corrector);
+}
+// const checktext = async () => {
+//   if(!corrector && sourceLanguage !== 'en'){
+//     Alert.alert("Only valid with english settings")
+//   }
+  
+//   try {
+//     const response = await fetch('https://us-central1-lingua-80a59.cloudfunctions.net/correction', {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json'
+//       },
+//       body: JSON.stringify({ text: textToTranslate }), 
+//     });
+
+//     if (!response.ok) {
+//       throw new Error(`HTTP error! status: ${response.status}`);
+//     }
+
+//     const data = await response.json();
+     
+//     console.log(data.corrected_text);
+//     for (const [misspelled, suggestions] of Object.entries(data.corrections)) {
+//       console.log(`Palabra incorrecta: ${misspelled}`);
+//       suggestions.forEach((suggestion, index) => {
+//         const [suggestedWord, confidence] = suggestion;
+//         console.log(`  Sugerencia ${index + 1}: ${suggestedWord} (Confianza: ${confidence})`);
+//       });
+//     }
+//   } catch (error) {
+//     console.error('Error checking text:', error);
+//   }
+// };
+// const correctPunctuationSpacing = (text) => {
+//   // Eliminar espacios antes de puntos y asegurar un solo espacio después de cada punto
+//   return text
+//     .replace(/\s*\.\s*/g, '. ') // Quitar espacios antes y después de un punto
+//     .trim(); // Eliminar cualquier espacio al final del texto
+// };
+const checktext = async () => {
+  if (!corrector && sourceLanguage !== 'en') {
+    Alert.alert("Only valid with english settings");
+    return;
+  }
+
+  try {
+    const response = await fetch('https://us-central1-lingua-80a59.cloudfunctions.net/correction', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text: textToTranslate }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    // Imprimir el JSON completo en la consola
+    console.log('JSON recibido:', data);
+
+    // Imprimir las correcciones
+    const corrections = data.corrections;
+    console.log('Correcciones:');
+    for (const [incorrectWord, suggestions] of Object.entries(corrections)) {
+      console.log(`Palabra incorrecta: ${incorrectWord}`);
+      for (const [suggestion, confidence] of suggestions) {
+        console.log(`- Sugerencia: ${suggestion}, Confianza: ${confidence}`);
+      }
+    }
+
+   
+    // const newtext = correctPunctuationSpacing(data.corrected_text);
+    // console.log('Corrected text:', newtext);
+    setTextToTranslate(data.corrected_text);
+    setCorrections(corrections); // Guardar las correcciones en el estado
+ 
+  } catch (error) {
+    //console.error('Error checking text:', error);
+  }
+};
 
 const getHighlightedText = (text, highlights) => {
+ 
+  if(corrector && sourceLanguage === 'en'){
+  //checktext(textToTranslate);
+  }
+  
+
+
+  //const corrector  = await AsyncStorage.getItem('corrector');
    
   // Verificar si highlights contiene algo, de lo contrario se establece como un array vacío
   const highlightWords = highlights ? highlights.toLowerCase().split(' ') : [];
@@ -1023,7 +1040,7 @@ const loadCensorWords = async () => {
     }
     return true;
   }; 
-  const searchpos = () => {
+  const searchpos = () => { 
     if (!targetLanguage) {
       Alert.alert('Error', 'Por favor, selecciona el idioma de destino.');
       return false;
@@ -1061,7 +1078,7 @@ const loadCensorWords = async () => {
         setSearcht(foundSimilarWord);
       } else {
         Alert.alert('No se encontró una palabra que textualmente represente lo mismo dentro de la traduccion', `"${search}" se intento con ${translatedSimilarWords}`);
-         
+        setSearcht("");
       }
       } else {
         setSearcht(translatedTextres);
@@ -1078,11 +1095,11 @@ const loadCensorWords = async () => {
         console.log(`Similar words found: ${JSON.stringify(similarWords)}`);
         return similarWords;
       } else {
-        console.log('No similar words found');
+       // console.log('No similar words found');
         return [];
       }
     } catch (error) {
-      console.error('Error fetching similar words:', error);
+     // console.error('Error fetching similar words:', error);
       return [];
     }
   };
@@ -1109,13 +1126,27 @@ const loadCensorWords = async () => {
     if (translatedWord) {
       const foundInOriginalText = check(textToTranslate, translatedWord); // Verifica si la palabra traducida inversa se encuentra en el texto original
       console.log(`Found in original text: ${foundInOriginalText}`);
-  
+
       if (!foundInOriginalText) {
-        Alert.alert('No se encontró la palabra', `La palabra "${translatedWord}" no se encontró en el texto original.`);
+      
+        
+      const similarWords = await findSimilarWords(search);
+      const translatedSimilarWords = await Promise.all(similarWords.map(word => translateText(word.word, sourceLanguage)));
+      const foundSimilarWord = translatedSimilarWords.find(translatedWord => check(textToTranslate, translatedWord));
+      
+      if (foundSimilarWord) {
+        setSearchWord(foundSimilarWord);
       } else {
-        setSearchWord(translatedWord); // Subraya la palabra en el texto original
+        Alert.alert('No se encontró una palabra que textualmente represente lo mismo dentro de la traduccion', `"${search}" se intento con ${translatedSimilarWords}`);
+         
       }
+      } else {
+        setSearchWord(translatedWord);
+      }
+
     }
+ 
+    
   };
   
 
@@ -1274,40 +1305,147 @@ const handleLanguageChange = (newLanguage) => {
   
   
 };
+  // const renderTextWithClickableWords = (text, highlights) => {
+  //   loadCorrector();
+
+  //   if (!text.trim()) {  // Verifica si el texto está vacío o solo contiene espacios en blanco
+  //     return (
+  //       <View style={styles.sourcee}>
+            
+  //         <Text style={styles.place}>Introduce algo...</Text>
+  //       </View>
+  //     );  // Muestra la leyenda
+  //   }
+ 
+
+ 
+  //   const words = text.split(' ');
+  //   const highlightWords = highlights.toLowerCase().split(' ');
+  
+  //   return (
+  //     <View style={styles.sourcee}>
+  //        <View style={styles.corrector}>
+  //         <Ionicons name="search" size={24} color="#61a5ff" onPress ={checktext} />
+  //       </View>
+  //       <Text style={styles.textInput}>
+  //         {words.map((word, index) => (
+  //           <TouchableOpacity key={index} onPress={() => handleWordPress(word)}>
+  //             <Text
+  //               style={[
+  //                 styles.word,
+  //                 highlightWords.includes(word.toLowerCase()) ? styles.highlightedText : null
+  //               ]}
+  //             >
+  //               {word + ' '}
+  //             </Text>
+  //           </TouchableOpacity>
+            
+  //         ))}
+  //       </Text>
+       
+       
+  //     </View>
+  //   );
+  // };
+  const showModalerrors = () => { 
+    setModalerrors(!modalerrors);
+  }
+  
+  
   const renderTextWithClickableWords = (text, highlights) => {
-    if (!text.trim()) {  // Verifica si el texto está vacío o solo contiene espacios en blanco
+    if (!text.trim()) {
       return (
         <View style={styles.sourcee}>
           <Text style={styles.place}>Introduce algo...</Text>
         </View>
-      );  // Muestra la leyenda
+      );
     }
   
-    const words = text.split(' ');
+    // Dividir por espacios para mantener palabras completas y puntuación juntos
+    const words = text.split(/(\s+)/); // Mantiene los espacios intactos
     const highlightWords = highlights.toLowerCase().split(' ');
   
     return (
       <View style={styles.sourcee}>
+        <View style={styles.corrector}>
+          <Ionicons name="search" size={20} style={styles.lupa} color="#61a5ff" onPress={checktext} />
+          <Ionicons name="swap-horizontal" size={24} style={styles.replaceerrors} color="#61a5ff" onPress={showModalerrors} />
+        </View>
         <Text style={styles.textInput}>
-          {words.map((word, index) => (
-            <TouchableOpacity key={index} onPress={() => handleWordPress(word)}>
-              <Text
-                style={[
-                  styles.word,
-                  highlightWords.includes(word.toLowerCase()) ? styles.highlightedText : null
-                ]}
-              >
-                {word + ' '}
-              </Text>
-            </TouchableOpacity>
-          ))}
+          {words.map((word, index) => {
+            // Limpiar signos de puntuación solo para palabras, dejando espacios intactos
+            const cleanedWord = word.toLowerCase().replace(/[^a-z]/g, '');
+            const isHighlighted = highlightWords.includes(cleanedWord);
+            const isIncorrect = corrections.hasOwnProperty(cleanedWord);
+  
+            // Solo aplicar estilos si la palabra tiene letras, evitar espacios y puntuación
+            const shouldStyle = cleanedWord.length > 0;
+  
+            return (
+              <TouchableOpacity key={index} onPress={() => handleWordPress(word)}>
+                <Text
+                  style={[
+                    styles.word,
+                    shouldStyle && isHighlighted ? styles.highlightedText : null,
+                    shouldStyle && isIncorrect ? styles.incorrectText : null // Estilo para palabras incorrectas
+                  ]}
+                >
+                  {word}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </Text>
       </View>
     );
   };
+  // const renderTextWithClickableWords = (text, highlights) => {
+  //   // loadCorrector();
+  //   // if (!corrector && sourceLanguage !== 'en') {
+  //   //   checktext(text);
+  //   // }
   
+  //   if (!text.trim()) {
+  //     return (
+  //       <View style={styles.sourcee}>
+  //         <Text style={styles.place}>Introduce algo...</Text>
+  //       </View>
+  //     );
+  //   }
   
-
+  //   const words = text.split(' ');
+  //   const highlightWords = highlights.toLowerCase().split(' ');
+  
+  //   return (
+  //     <View style={styles.sourcee}>
+  //       <View style={styles.corrector}>
+  //         <Ionicons name="search" size={20} style = {styles.lupa} color="#61a5ff" onPress={checktext} />
+  //         <Ionicons name="swap-horizontal" size={24} style = {styles.replaceerrors} color="#61a5ff" onPress={showModalerrors} />
+  //       </View>
+  //       <Text style={styles.textInput}>
+  //         {words.map((word, index) => {
+  //           const isHighlighted = highlightWords.includes(word.toLowerCase());
+  //           const isIncorrect = corrections.hasOwnProperty(word);
+  
+  //           return (
+  //             <TouchableOpacity key={index} onPress={() => handleWordPress(word)}>
+  //               <Text
+  //                 style={[
+  //                   styles.word,
+  //                   isHighlighted ? styles.highlightedText : null,
+  //                   isIncorrect ? styles.incorrectText : null // Estilo para palabras incorrectas
+  //                 ]}
+  //               >
+  //                 {word + ' '}
+  //               </Text>
+  //             </TouchableOpacity>
+  //           );
+  //         })}
+  //       </Text>
+  //     </View>
+  //   );
+  // };
+  
   const callCloudFunction = async (newLanguage, word) => {
      
     console.log('palabra con llamada: ' + word);
@@ -1367,11 +1505,124 @@ const handleLanguageChange = (newLanguage) => {
 
 
 
+  const handleReplaceWord = (incorrectWord, suggestion) => {
+    setTextToTranslate((prevText) => prevText.replace(new RegExp(`\\b${incorrectWord}\\b`, 'gi'), suggestion));
+  };
 
 
+  const CorrectionsModal = ({ onReplaceWord }) => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const correctionKeys = Object.keys(corrections);
+    const currentWord = correctionKeys[currentIndex];
+    const currentSuggestions = corrections[currentWord] || [];
+  
+    const handleNext = () => {
+      if (currentIndex < correctionKeys.length - 1) {
+        setCurrentIndex(currentIndex + 1);
+      }
+    };
+  
+    const handlePrevious = () => {
+      if (currentIndex > 0) {
+        setCurrentIndex(currentIndex - 1);
+      }
+    };
+  
+    return (
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalerrors}
+        onRequestClose={() => {
+          setModalerrors(!modalerrors);
+        }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.ModalTitle}>Correcciones ortográficas</Text>
+            <Text style={styles.incorrectWord}>{currentWord}</Text>
+            {currentSuggestions.map(([suggestion], index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => {
+                  onReplaceWord(currentWord, suggestion);
+                  (false);
+                }}
+              >
+                <Text style={styles.wordings}>{suggestion}</Text>
+              </TouchableOpacity>
+            ))}
+            <View style={styles.navigationButtons}>
+            <TouchableOpacity onPress={handlePrevious} disabled={currentIndex === 0}>
+              <Ionicons
+                name="chevron-back"
+                size={34}
+                style={[styles.navigationButton, currentIndex === 0 && styles.disabledButton]}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleNext} disabled={currentIndex === correctionKeys.length - 1}>
+              <Ionicons
+                name="chevron-forward"
+                size={34}
+                style={[styles.navigationButton, currentIndex === correctionKeys.length - 1 && styles.disabledButton]}
+              />
+            </TouchableOpacity>
+          </View>
+            <Ionicons
+              name="close-circle"
+              size={30}
+              color="#259CF6"
+              onPress={() => setModalerrors(false)}
+              style={styles.closeIcon}
+            />
+          </View>
+        </View>
+      </Modal>
+    );
+  };
 
 
-
+  // const CorrectionsModal = ({onReplaceWord }) => {
+  //   return (
+  //     <Modal
+  //       animationType="slide"
+  //       transparent={true}
+  //       visible={modalerrors}
+  //       onRequestClose={() => {
+  //         setModalerrors(!modalerrors);
+  //       }}
+  //     >
+  //       <View style={styles.centeredView}>
+  //         <View style={styles.modalView}>
+  //           <Text style={styles.title}>Correcciones ortográficas</Text>
+  //           {Object.entries(corrections).map(([incorrectWord, suggestions]) => (
+  //             <View key={incorrectWord} style={styles.correctionItem}>
+  //               <Text style={styles.incorrectWord}>{incorrectWord}</Text>
+  //               {suggestions.map(([suggestion], index) => (
+  //                 <TouchableOpacity
+  //                   key={index}
+  //                   onPress={() => {
+  //                     onReplaceWord(incorrectWord, suggestion);
+  //                     setModalerrors(false);
+  //                   }}
+  //                 >
+  //                   <Text style={styles.suggestion}>{suggestion}</Text>
+  //                 </TouchableOpacity>
+  //               ))}
+  //             </View>
+  //           ))}
+  //           <Ionicons
+  //             name="close-circle"
+  //             size={24}
+  //             color="#259CF6"
+  //             onPress={() => setModalerrors(false)}
+  //             style={styles.closeIcon}
+  //           />
+  //         </View>
+  //       </View>
+  //     </Modal>
+  //   );
+  // };
 
 
 
@@ -1564,7 +1815,10 @@ const pickerSelectStylescustom = {
           </View>
         ) : (
           <TouchableWithoutFeedback onPress={handlePress}>
-            <View>{renderTextWithClickableWords(textToTranslate, searchWord)}</View>
+            <View>
+              {renderTextWithClickableWords(textToTranslate, searchWord)} 
+               
+              </View>
           </TouchableWithoutFeedback>
         )}
 
@@ -1619,36 +1873,11 @@ const pickerSelectStylescustom = {
     </View>
   </View>
 
-              {/* <View style={styles.centeredView}>
-                
-
-
-
-
-                <View style={styles.modalView}>
-                <Ionicons name="volume-high" size={24} color="#259CF6" style={styles.speakerIcon}    onPress={fetchPronunciation}/>
-                
-                  
-                   <RNPickerSelect
-                placeholder={placeholder}
-                items={languageOptions.map(lang => ({ label: lang.name, value: lang.code }))}
-                onValueChange={(value) => handleLanguageChange(value)}
-                style={pickerSelectStylescustom}
-                value={sourcesyn}
-                useNativeAndroidPickerStyle={false}
-              />
-
-                  <Text style={styles.wording}> {selectedWord} </Text>
-
-
-
-                  <Text style={styles.modalText}> {synonyms} </Text>
-                  <Text style={styles.modalText}> {definition} </Text>
-                  <Ionicons name="exit" size={24} color="#259CF6"    onPress={() => setModalVisible(!modalVisible)}/>
-                  
-                </View>
-              </View> */}
+               
             </Modal>
+            <CorrectionsModal
+       onReplaceWord={handleReplaceWord}
+      />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

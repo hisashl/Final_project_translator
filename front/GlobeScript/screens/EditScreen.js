@@ -10,6 +10,7 @@ import {
   Button,
   Text,
   TextInput,
+  Switch,
   TouchableOpacity,
   FlatList,
   SafeAreaView,
@@ -53,6 +54,31 @@ export default function EditScreen() {
   const [profileName, setProfileName] = useState('');
  
   const { styler, updateStyles, theme, toggleTheme } = useStyle();
+
+
+
+  const [isEnabled, setIsEnabled] = useState(false);
+  
+  const toggleSwitch = () => {
+    const newValue = !isEnabled;
+    setIsEnabled(newValue);
+    AsyncStorage.setItem('corrector', JSON.stringify(newValue)); // Guarda el valor como una cadena
+  };
+  
+  const loadcorrector = async () => {
+    try {
+      const option = await AsyncStorage.getItem('corrector');
+      if (option !== null) {
+        setIsEnabled(JSON.parse(option)); // Convierte de cadena a booleano
+      } else {
+        setIsEnabled(false);
+      }
+    } catch (error) {
+      //console.error('Error retrieving option:', error);
+      setIsEnabled(false); // Valor predeterminado en caso de error
+    }
+  };
+  
   
   const loadCensorOption = async () => {
     try {
@@ -62,7 +88,7 @@ export default function EditScreen() {
       }
       loadCensorWords();
     } catch (error) {
-      console.error('Failed to load censor option', error);
+     // console.error('Failed to load censor option', error);
     }
   };
   
@@ -91,18 +117,19 @@ const loadCensorWords = async () => {
         // await AsyncStorage.setItem('censorWords', JSON.stringify(words));
         setCensorWords(words);
       } else {
-        console.error('Failed to fetch words from the cloud:', data.message);
+        //console.error('Failed to fetch words from the cloud:', data.message);
       }
     
 
     // Establecer las palabras en el estado o hacer cualquier otra cosa necesaria con las palabras
     setCensorWords(words);
   } catch (error) {
-    console.error('Failed to load words:', error);
+   // console.error('Failed to load words:', error);
   }
 };
   
  useEffect(() => {
+  loadcorrector();
   loadProfiles();
   loadCurrentProfile();
   loadCensorOption();
@@ -134,7 +161,7 @@ const loadCensorWords = async () => {
           };
           await AsyncStorage.setItem('currentProfile', JSON.stringify(profileData));
         } catch (error) {
-          console.error('Error saving current profile:', error);
+          //console.error('Error saving current profile:', error);
         }
       }
     }
@@ -152,7 +179,7 @@ const loadCensorWords = async () => {
         setFontSize(parseInt(profile.fontSize, 10));
       }
     } catch (error) {
-      console.error('Error loading current profile:', error);
+     // console.error('Error loading current profile:', error);
     }
   };
   
@@ -440,7 +467,7 @@ const handleCensorOptionChange = async (itemValue) => {
     console.log(itemValue);
     
   } catch (error) {
-    console.error('Failed to save censor option', error);
+    //console.error('Failed to save censor option', error);
   }
 };
  
@@ -454,7 +481,7 @@ const printCensorWords = async () => {
       console.log('No censor words stored.');
     }
   } catch (error) {
-    console.error('Failed to fetch censor words from AsyncStorage:', error);
+    //console.error('Failed to fetch censor words from AsyncStorage:', error);
   }
 };
 
@@ -635,6 +662,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: theme === 'light' ? 'black' : 'white',
   },
+  labelswitch: {
+    //marginTop: 20, // Espacio antes de cada etiqueta
+    fontSize: 16,
+    color: theme === 'light' ? 'black' : 'white',
+    marginRight: 150, // Espacio entre la etiqueta y el switch
+  },
   slider: {
     width: '70%',
     marginVertical: 20, // Espacio vertical para el Slider
@@ -736,7 +769,17 @@ const styles = StyleSheet.create({
 </View> 
 
  
-
+                  {/* Aquí es donde se agrega el Switch */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+           <Text style={styles.labelswitch}>Corrector ortografico:</Text>
+           <Switch
+             trackColor={{ false: "#d3d3d3", true: "#90ee90" }}
+             thumbColor={isEnabled ? "#fff" : "#fff"}
+             ios_backgroundColor="#3e3e3e"
+             onValueChange={toggleSwitch}
+             value={isEnabled}
+           />
+         </View>
 
 {/* 
             <View style={styles.profilesContainer}>
@@ -751,7 +794,7 @@ const styles = StyleSheet.create({
   ))}
 </View>
  */}
- <ScrollView
+ <ScrollView  
   horizontal={true}
   showsHorizontalScrollIndicator={false}
   contentContainerStyle={styles.profilesContainer}

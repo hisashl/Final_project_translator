@@ -58,7 +58,7 @@ const TextScreen = () => {
         }
         setDocuments(result);
       } catch (error) {
-        console.error('Error retrieving documents:', error);
+       // console.error('Error retrieving documents:', error);
       } finally {
         setLoading(false);
       }

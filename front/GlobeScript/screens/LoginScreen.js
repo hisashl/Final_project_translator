@@ -39,7 +39,7 @@ export default function LoginScreen() {
         });
       }
     } catch (error) {
-      console.error('Error loading current profile:', error);
+      //console.error('Error loading current profile:', error);
     }
   };
 

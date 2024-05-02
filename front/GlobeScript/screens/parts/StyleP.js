@@ -14,6 +14,9 @@ const useCustomStyles = () => {
     highlightedText: {
       backgroundColor: 'gray',
     },
+    incorrectText: {
+      backgroundColor: 'red',
+    },
     colorth: {
         // Usa el color de texto de styler o cae de nuevo a negro
     },
@@ -56,6 +59,26 @@ const useCustomStyles = () => {
       shadowRadius: 4,
       elevation: 5,
     },
+    modalViews: {
+      margin: 20,
+      backgroundColor: 'white',
+      borderRadius: 20,
+      padding: 35,
+      alignItems: 'center',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5,
+    },
+    incorrectWord: {
+      fontSize: 18,
+      color: 'red',
+      marginBottom: 10,
+      marginTop: 10,
+    },
+    
+  
     speakerIcon: {
       position: 'absolute',
       right: 30,
@@ -66,7 +89,7 @@ const useCustomStyles = () => {
       // marginTop: 20,
       // marginBottom: 15,
       fontSize: 18,
-      color:  theme === 'li8ht' ? styler.textColor : 'white',  // Usa el color de texto de styler o cae de nuevo a negro
+      color:  theme === 'light' ? styler.textColor : 'white',  // Usa el color de texto de styler o cae de nuevo a negro
     },
     wording:{
       marginTop: 20,
@@ -138,6 +161,11 @@ const useCustomStyles = () => {
     },
     navTitle: {
       fontSize: 22,
+      fontWeight: 'bold',
+      color: theme === 'light' ? 'black' : 'white',
+    },
+    ModalTitle: {
+      fontSize: 19,
       fontWeight: 'bold',
       color: theme === 'light' ? 'black' : 'white',
     },
@@ -261,16 +289,45 @@ const useCustomStyles = () => {
     searchButtonText: {
       color: 'white', // Agrega color blanco al texto del botón para que sea visible
     },
-    
+    corrector:{
+      marginLeft: 260,
+      flexDirection: 'row',
+    },
     title: {
       fontWeight: 'bold',
       alignSelf: 'center',
       paddingVertical: 10,
     },
+    scrollViewContainer: {
+      flexGrow: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingVertical: 20, // Espacio vertical dentro del ScrollView
+    },
+    navigationButton: {
+      color: '#259CF6',
+      marginHorizontal: 20,
+    },
+    closeIcon: {
+      marginTop: 15,
+    },
+    navigationButtons: {
+      flexDirection: 'row',
+      marginTop: 20,
+      
+  
+    },
     root: {
       flex: 1,
       marginTop: StatusBar.currentHeight || 0,
       backgroundColor: '#eaeaea',
+    },
+    replaceerrors: {
+      marginLeft:15,
+     
+    },
+    lupa: {
+      marginTop: 2,
     },
     editor: {
       flex: 1,

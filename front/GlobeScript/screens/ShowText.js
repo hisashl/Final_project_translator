@@ -208,7 +208,7 @@ const ShowText = ({ route, navigation }) => {
           throw new Error(result.error || 'Failed to retrieve documents');
         }
       } catch (error) {
-        console.error('Error updating documents:', error);
+        //console.error('Error updating documents:', error);
       }
     }
     Alert.alert('Update', 'Document updated successfully!');
