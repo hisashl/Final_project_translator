@@ -5,7 +5,7 @@
     import { Ionicons, FontAwesome5  } from '@expo/vector-icons';
     import RNPickerSelect from 'react-native-picker-select';
     import languageOptions from '../lenguajes.json';
-    
+    import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useStyle } from './StyleContext'
     import { useNavigation } from '@react-navigation/native'; 
     const placeholder = {
@@ -328,6 +328,36 @@ import { useStyle } from './StyleContext'
    
     navigation.navigate('Photo', { data: inputText });
   };
+   
+
+  const storedtext = async () => {
+
+  
+      const userId = await AsyncStorage.getItem('username');
+    
+    try {
+        const response = await fetch('https://us-central1-lingua-80a59.cloudfunctions.net/list_documents', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Failed to fetch documents");
+
+        if (data.length >= 10) {
+            Alert.alert("Error", "Ya has alcanzado el límite de 10 documentos.");
+            navigation.navigate('Texts');
+            return;
+        }
+         
+        else {
+          navigation.navigate('Stored',  { text:  inputText});
+        }
+    } catch (error) {
+        Alert.alert("Error", error.message || "An error occurred");
+    }
+};
+
   const pickerSelectStyles = {
 
     inputIOS: {
@@ -643,6 +673,9 @@ import { useStyle } from './StyleContext'
 
   <TouchableOpacity style={styles.languageButton} onPress={handleLanguageIconPress}>
     <Ionicons name="language" size={24} color="#61a5ff" />
+  </TouchableOpacity>
+  <TouchableOpacity style={styles.languageButton} onPress={storedtext}>
+    <Ionicons name="heart" size={24} color="#61a5ff" />
   </TouchableOpacity>
 </View>
 

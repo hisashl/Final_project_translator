@@ -55,7 +55,8 @@ const PhotoScreen = ({ route  }) => {
   const MAX_SIZE = 30 * 1024 * 1024; 
   const [censorOption, setCensorOption] = useState('none');
   const [censorWords, setCensorWords] = useState([]); // Inicia con las palabras predeterminadas
-
+  const [dontShowAgainmanchas, setDontShowAgainmanchas] = useState(false);
+  const [alertShownmanchas, setAlertShownmanchas] = useState(false);
   const selectFileFromFiles = async () => {
     if (showWarning && !dontShowAgain) {
       showTranslationWarning();
@@ -174,7 +175,7 @@ const PhotoScreen = ({ route  }) => {
       animateText("cargando texto...");
     }
   };
-  
+   
   const saveImage = async (uri) => {
     // Asegurarse de que el directorio existe
     await ensureDirExist();
@@ -210,7 +211,11 @@ const PhotoScreen = ({ route  }) => {
         // Obtener URL de la imagen subida
         const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
         console.log('File available at', downloadURL);
-  
+       // await AsyncStorage.setItem('showAdvertenciamanchas', 'false');
+        if( alertShownmanchas){
+          showAlertmanchas(); 
+        }
+        
         // Detectar texto en la imagen usando la API de Google Cloud Vision
         try {
           const apiUrl = 'https://vision.googleapis.com/v1/images:annotate';
@@ -299,6 +304,26 @@ const PhotoScreen = ({ route  }) => {
     setCensorOption(option);
     console.log('Censor option:', option);
   };
+
+  const showAlertmanchas = () => {
+    Alert.alert(
+      'Advertencia',
+      'Si la imagen cuenta con manchas o marcas de agua sobrepuestas en el texto, se puede afectar a la detección de este.',
+      [{ text: 'no volver a mostrar', onPress: handleAlertClosemanchas },
+      { text: 'Entendido'}]
+    );
+  };
+
+  const handleAlertClosemanchas = async () => {
+    setAlertShownmanchas(false);
+    await AsyncStorage.setItem('showAdvertenciamanchas', dontShowAgain ? 'false' : 'true');
+  };
+
+  const toggleDontShowAgainmanchas = (value) => {
+    setDontShowAgainmanchas(value);
+  };
+   
+
   
   useFocusEffect(
     React.useCallback(() => {
@@ -311,6 +336,14 @@ const PhotoScreen = ({ route  }) => {
     }, [])
   );
   useEffect(() => {
+    const checkAlertSetting = async () => {
+      const value = await AsyncStorage.getItem('showAdvertenciamanchas');
+      if (value === null || value === 'true') {
+        setAlertShownmanchas(true);
+      }
+    };
+
+    checkAlertSetting();
     loadCorrector();
     // Carga de imágenes
     const loadImages = async () => {

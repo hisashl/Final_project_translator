@@ -324,9 +324,10 @@ const apply = () => {
  
 
   const fonts = {
+    'Arial': require ('../assets/fonts/Arial.ttf'),
     'Roboto': require('../assets/fonts/Roboto-Regular.ttf'),
     'Calibri': require('../assets/fonts/calibri.ttf'),
-    'TimesNewRoman': require('../assets/fonts/Times New Roman.ttf'),
+    'TimesNewRoman': require('../assets/fonts/Times_new.ttf'),
     'Verdana': require('../assets/fonts/Verdana.ttf'),
   };
 
