@@ -273,7 +273,8 @@ const PhotoScreen = ({ route  }) => {
   const handleTranslation = async () => {
     setSearchWord("")
     setSearcht("");
-    
+    setCorrections({});
+    setCorrector(false); 
     if (!sourceLanguage || !targetLanguage) {
       Alert.alert('Error', 'Por favor, selecciona los idiomas de origen y destino.');
       return;
@@ -286,10 +287,37 @@ const PhotoScreen = ({ route  }) => {
     loadCensorWords();
   
     setIsTranslating(true);
-    const translatedText = await translateText(textToTranslate, targetLanguage); // Usar el idioma de destino seleccionado por el usuario
-    if (translatedText) {
-      console.log('Translated text:', translatedText);
-      animatetranslated(translatedText);
+    
+     await fixfulltext();
+     
+
+  //     for (const [incorrectWord, suggestions] of Object.entries(corrections)) {
+  //       // Simple if statement to skip certain corrections
+  //       if (incorrectWord === ".") {
+  //         continue; // Skip this correction
+  //       }
+
+        
+  //       const [bestSuggestion] = suggestions.reduce((prev, current) => (current[1] > prev[1] ? current : prev));
+  //       console.log(`- Replacing '${incorrectWord}' with '${bestSuggestion}'`);
+
+  //       handleReplaceWord(incorrectWord, bestSuggestion);
+  //     }
+      
+  //     const translatedText = await translateText(textToTranslate, targetLanguage);
+  //     if (translatedText) {
+  //       console.log("texto original antes de trad: " + textToTranslate);
+  //       console.log('Translated text:', translatedText);
+  //       animatetranslated(translatedText); 
+  //     }
+  //  // setTextToTranslate("Prueba rapida");
+  //   }
+  //   else{
+      const translatedText = await translateText(textToTranslate, targetLanguage); // Usar el idioma de destino seleccionado por el usuario
+      if (translatedText) {
+        console.log('Translated text:', translatedText);
+        animatetranslated(translatedText); 
+        
     }
     
   
@@ -297,7 +325,22 @@ const PhotoScreen = ({ route  }) => {
    setIsTranslating(true);
   
   };
-  
+  const loadcorrection = async () => {
+    if (corrector && sourceLanguage === 'en') {
+       
+      checktext();
+      let correctedText = textToTranslate;
+      for (const [incorrectWord, suggestions] of Object.entries(corrections)) {
+      const [bestSuggestion] = suggestions[0];
+      if (incorrectWord === ".") {
+        continue; // Skip this correction
+      }
+      correctedText = correctedText.replace(new RegExp(`\\b${incorrectWord}\\b`, 'gi'), bestSuggestion);
+      }
+       
+      return correctedText;
+    }
+  };
  
   const fetchCensorOption = async () => {
     const option = await getCensorOption();
@@ -831,6 +874,56 @@ const loadCorrector = async () => {
 //     .replace(/\s*\.\s*/g, '. ') // Quitar espacios antes y después de un punto
 //     .trim(); // Eliminar cualquier espacio al final del texto
 // };
+const fixfulltext = async () => {
+  
+
+  try {
+    const response = await fetch('https://us-central1-lingua-80a59.cloudfunctions.net/correction', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text: textToTranslate }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    // Print the received JSON in the console
+    console.log('JSON received:', data);
+
+    // Initialize the corrected text
+    let correctedText = data.corrected_text;
+
+    // Iterate over the corrections and replace incorrect words
+    const corrections = data.corrections;
+    for (const [incorrectWord, suggestions] of Object.entries(corrections)) {
+      console.log(`Incorrect word: ${incorrectWord}`);
+
+      if (incorrectWord === ".") {
+        continue; // Skip this correction
+      }
+      // Find the suggestion with the highest confidence
+      const [bestSuggestion] = suggestions.reduce((prev, current) => (current[1] > prev[1] ? current : prev));
+      console.log(`- Replacing '${incorrectWord}' with '${bestSuggestion}'`);
+
+      // Replace incorrect word with the suggestion having the highest confidence
+      correctedText = correctedText.replace(new RegExp(`\\b${incorrectWord}\\b`, 'gi'), bestSuggestion);
+      
+    }
+    console.log(`Corrected text: ${correctedText}`);
+    // Update the state with the corrected text
+    //setTextToTranslate(correctedText);
+    animateText(correctedText);
+    
+  } catch (error) {
+    console.error('Error checking text:', error);
+  }
+};
+
 const checktext = async () => {
   if (!corrector && sourceLanguage !== 'en') {
     Alert.alert("Only valid with english settings");
@@ -1514,26 +1607,44 @@ const handleLanguageChange = (newLanguage) => {
   };
   
   const heartfunct = () => {
-
-    if (heartColor === '#D3D3D3'){
-    setHeartColor( '#FF0000');
-    if (translatedText){
-    navigation.navigate('Stored',  { text: translatedText });}
-    else {
-        Alert.alert('No hay texto para guardar');
-      }
-
+     
+    const cando = storedtext();
+    if (cando){ 
+      if (translatedText){
+      navigation.navigate('Stored',  { text: translatedText });}
+      else {
+        Alert.alert('No hay texto para guardar');  
+        return;
+      } 
     }
-    else {
-
-      setHeartColor( '#D3D3D3');
-    }
-   
-    
-
-
-
+     
   }
+  const storedtext = async () => {
+
+  
+    const userId = await AsyncStorage.getItem('username');
+  
+  try {
+      const response = await fetch('https://us-central1-lingua-80a59.cloudfunctions.net/list_documents', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: userId })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Failed to fetch documents");
+
+      if (data.length >= 10) {
+          Alert.alert("Error", "Ya has alcanzado el límite de 10 documentos.");
+          navigation.navigate('Texts');
+      }
+       
+      else {
+        return true;
+      }
+  } catch (error) {
+      Alert.alert("Error", error.message || "An error occurred");
+  }
+};
    
 
 

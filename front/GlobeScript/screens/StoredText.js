@@ -56,7 +56,8 @@ const StoredText = ({ route  }) => {
   }, []);
 
   const checkAndSave = async () => {
-      if (!title) {
+    console.log(title.length);
+      if (title.length===0) {
           Alert.alert("Error", "Ingresa un titulo");
           return;
       } else if (title.length > 30) {

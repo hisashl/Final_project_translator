@@ -183,8 +183,23 @@ const ShowText = ({ route, navigation }) => {
   const styles = useCustomStyles();
 
   const handleSave = async () => {
+    console.log(title.length);
+    if (title.length === 0) {
+        Alert.alert("Error", "Ingresa un titulo");
+        setTitle("");
+        return;
+    } else if (title.length > 30) {
+        Alert.alert("Error", "El título no puede tener más de 30 caracteres.");
+        setTitle("");
+        return;
+    }
+   
     const userId = await AsyncStorage.getItem('username');
     if (userId) {
+
+
+
+    
       try {
         const response = await fetch(
           'https://us-central1-lingua-80a59.cloudfunctions.net/update_document',
