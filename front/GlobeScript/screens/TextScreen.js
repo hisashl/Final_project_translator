@@ -260,31 +260,48 @@ const TextScreen = () => {
   };
 
   const handleDeleteDocument = async (doc) => {
-    const userId = await AsyncStorage.getItem('username');
-    const response = await fetch(
-      'https://us-central1-lingua-80a59.cloudfunctions.net/remove_document',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+    Alert.alert(
+      'Advertencia',
+      'Confirmar que desea eliminar el texto almacenado.',
+      [
+        {
+          text: 'Aceptar',
+          onPress: async () => {
+            const userId = await AsyncStorage.getItem('username');
+            const response = await fetch(
+              'https://us-central1-lingua-80a59.cloudfunctions.net/remove_document',
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  user_id: userId,
+                  document_id: doc.document_id,
+                }),
+              }
+            );
+  
+            const result = await response.json();
+  
+            if (response.ok) {
+              Alert.alert('Success', 'Document deleted successfully.');
+              fetchDocuments(); // Asegúrate de que esta función esté definida y accesible
+            } else {
+              Alert.alert('Error', result.error || 'Failed to delete the document.');
+            }
+          },
         },
-        body: JSON.stringify({
-          user_id: userId,
-          document_id: doc.document_id,
-        }),
-      }
+        {
+          text: 'Cancelar',
+          onPress: () => {},
+          style: 'cancel',
+        },
+      ]
     );
-
-    const result = await response.json();
-
-    if (response.ok) {
-      Alert.alert('Success', 'Document deleted successfully.');
-      fetchDocuments();
-    } else {
-      Alert.alert('Error', result.error || 'Failed to delete the document.');
-    }
   };
   
+ 
   const renderDocument = ({ item }) => {
     // Check if the last_modification is a valid date string
     let formattedDate = 'No Date';

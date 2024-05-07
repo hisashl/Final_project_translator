@@ -80,6 +80,8 @@ const StoredText = ({ route  }) => {
           });
           const data = await response.json();
           if (!response.ok) throw new Error(data.message || "Failed to fetch documents");
+          const newDocumentId = data.length > 0 ? Math.max(...data.map(doc => doc.document_id)) + 1 : 0;
+
 
           if (data.length >= 10) {
               Alert.alert("Error", "Ya has alcanzado el límite de 10 documentos.");
@@ -95,7 +97,7 @@ const StoredText = ({ route  }) => {
                   title: title,
                   description: description,
                   text: text,
-                  document_id: data.length+1,
+                  document_id: newDocumentId,
               })
           });
 
@@ -103,6 +105,8 @@ const StoredText = ({ route  }) => {
           if (!saveResponse.ok) throw new Error(saveResult.message || "Failed to save document");
 
           Alert.alert("Éxito", "Documento guardado exitosamente!");
+          navigation.goBack();
+          
       } catch (error) {
           Alert.alert("Error", error.message || "An error occurred");
       }

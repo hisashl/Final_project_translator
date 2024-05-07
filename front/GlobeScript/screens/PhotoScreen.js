@@ -1659,9 +1659,9 @@ const handleLanguageChange = (newLanguage) => {
     setModalVisible(true);
   };
   
-  const heartfunct = () => {
+  const heartfunct = async () => {
      
-    const cando = storedtext();
+    const cando = await storedtext();
     if (cando){ 
       if (translatedText){
       navigation.navigate('Stored',  { text: translatedText });}
