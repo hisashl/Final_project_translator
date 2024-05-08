@@ -83,7 +83,7 @@ export default function LoginScreen() {
 
 
 
-          navigation.navigate('Home');
+          navigation.replace('Home');
         } else {
           Alert.alert('Error', 'Datos de inicio de sesión inválidos');
         }
@@ -111,7 +111,7 @@ export default function LoginScreen() {
   }, [isLoading, username, password]);
 
   const signup = () => {
-    navigation.navigate('Registro');
+    navigation.replace('Registro');
   };
 
   return (

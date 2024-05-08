@@ -103,6 +103,18 @@ const useCustomStyles = () => {
       fontSize: 24,
       color:  theme === 'light' ? styler.textColor : 'white',  // Usa el color de texto de styler o cae de nuevo a negro
     },
+    commentBox: {
+      padding: 10,
+      margin: 10,
+      backgroundColor: '#f0f0f0',
+      borderRadius: 5,
+      borderWidth: 1,
+      borderColor: '#ccc'
+    },
+    commentText: {
+      color: '#333',
+      fontSize: 16,
+    },
 
     word: {
       

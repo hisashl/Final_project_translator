@@ -320,7 +320,7 @@ const TextScreen = () => {
         });
       }
     }
-  
+
     return (
       <TouchableOpacity
         style={styles.card}

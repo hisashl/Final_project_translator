@@ -26,6 +26,7 @@ import Slider from '@react-native-community/slider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Font from 'expo-font';
 import { useFonts } from 'expo-font';
+import { useNavigation } from '@react-navigation/native'; 
 import axios from 'axios';
 import BadWords from '../BadWord';
 import ColorPicker, { Panel3, Preview, BrightnessSlider, OpacitySlider } from 'reanimated-color-picker';
@@ -39,7 +40,7 @@ export default function EditScreen() {
   const [isEditingBackground, setIsEditingBackground] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState('#FFFFFF');
   const [inputBackgroundColor, setInputBackgroundColor] = useState('#FFFFFF');
-
+  const navigation = useNavigation();
   const [profiles, setProfiles] = useState([]); // Estado para almacenar todos los perfiles
   const [currentProfileIndex, setCurrentProfileIndex] = useState(0); // Índice del perfil actualmente seleccionado
 
@@ -563,6 +564,28 @@ const handleRemoveWord = async (wordToRemove) => {
 
 
 
+const clearCredentials = async () => {
+  try {
+    await AsyncStorage.removeItem('username');
+    await AsyncStorage.removeItem('password');
+    console.log('Username and password have been removed');
+  } catch (error) {
+    console.error('Failed to clear the async storage:', error);
+  }
+  // try {
+  //   await AsyncStorage.clear();
+  //   console.log('AsyncStorage has been cleared!');
+  // } catch (error) {
+  //   console.error('Error clearing AsyncStorage:', error);
+  // }
+};
+
+
+  const handleLogout = () => {
+    clearCredentials();
+    navigation.replace('Login');
+  };
+
 const styles = StyleSheet.create({
   scrollView: {
     width: '100%',
@@ -725,10 +748,10 @@ const styles = StyleSheet.create({
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView contentContainerStyle={styles.scrollViewContainer}>
           <View style={styles.navBar}>
-            <Text style={styles.navTitle}>Audio</Text>
+            <Text style={styles.navTitle}>Configuration</Text>
           </View>
           <View style={styles.footerMenu}>
-          <Ionicons name="create" size={40} color="#000" />
+          <Ionicons name="create" size={40} color="#000" onPress={handleLogout}/>
             </View>
              
       <TextInput

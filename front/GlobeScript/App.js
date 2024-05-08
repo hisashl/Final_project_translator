@@ -29,8 +29,8 @@ export default function App() {
 
           
       <Stack.Navigator>
-         {/* <Stack.Screen   options={{ headerShown: false }}  name="Bienvenida" component={Bienvenida} />
-        <Stack.Screen options = {{headerShown: false}} name="Login" component={LoginScreen} />  */}
+         <Stack.Screen   options={{ headerShown: false }}  name="Bienvenida" component={Bienvenida} />
+        <Stack.Screen options = {{headerShown: false}} name="Login" component={LoginScreen} /> 
         {/* <Stack.Screen name = "Synonyms" component={Synonyms} /> */}
         <Stack.Screen options = {{headerShown: false}}  name="Home" component={HomeScreen} />  
         
