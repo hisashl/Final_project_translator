@@ -261,19 +261,20 @@ const useCustomStyles = () => {
       fontSize: 16,
     },
     translatedText: {
-     
-     
+      width: 350,  // Ancho fijo
+       
+    
       marginLeft: 20,  // Aumenta el espacio a la izquierda
       marginRight: 50,  // Reduce el espacio a la derecha si es necesario
       padding: 16,
       borderWidth: 2,
       borderColor: '#ccc',
-       
-
+      
       backgroundColor: theme === 'light' ? styler.backgroundColor : '#2E2E2E',
-
+      
       borderRadius: 10,
-    },    
+    },
+    
     
     
     sourcee: {

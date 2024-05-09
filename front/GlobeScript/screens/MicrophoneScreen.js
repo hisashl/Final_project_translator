@@ -300,6 +300,7 @@ import { useStyle } from './StyleContext'
       setInputText("");
       setInputText(prevText => prevText + (prevText ? ' ' : '') + data.transcription);
     } catch (error) {
+      Alert.alert("Error", "El audio mandado no pudo ser procesado ya que no es claro lo dicho por el micrófono. Por favor, inténtalo de nuevo más tarde.");
       //console.error('Error en trans:', error);
       setInputText(' ');
     }
