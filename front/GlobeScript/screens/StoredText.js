@@ -127,7 +127,7 @@ const StoredText = ({ route  }) => {
   
             <TextInput
                 style={styles.titlesave}
-                placeholder="Title"
+                placeholder="Titulo"
                 value={title}
                 onChangeText={setTitle}
                 placeholderTextColor={theme === 'light' ? "#888" : '#fffe'}
@@ -139,7 +139,7 @@ const StoredText = ({ route  }) => {
           
       <TextInput
                 style={styles.wording}
-                placeholder="Description"
+                placeholder="Descripcion"
                 value = {description}
                 onChangeText={setDescription}
                 placeholderTextColor={theme === 'light' ? "#888" : '#fffe'}
@@ -150,7 +150,7 @@ const StoredText = ({ route  }) => {
           
           <TextInput
                     style={styles.wording}
-                    placeholder="Text"
+                    placeholder="Texto"
                     value = {text}
                     onChangeText={setText}
                     placeholderTextColor={theme === 'light' ? "#888" : '#fffe'}

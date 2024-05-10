@@ -56,7 +56,7 @@ export default function NewPw({ route }) {
       );
 
       if (response.data === 'Password updated successfully.') {
-        Alert.alert('Success', 'Your password has been reset.');
+        Alert.alert('Success', 'Su contraseña fue actualizada');
         navigation.navigate('Login'); // Navigate to login screen after password reset
       } else {
         Alert.alert('Error', 'Hubo un problema al actualizar tu contraseña.');
@@ -73,16 +73,16 @@ export default function NewPw({ route }) {
       <KeyboardAvoidingView style={styles.container}>
         <LinearGradient colors={['#F1F1F1', '#E1ECE2']} style={styles.background} />
         <View style={styles.card}>
-          <Text style={styles.linkText}>Reset Password</Text>
+          <Text style={styles.linkText}>Resetear Conntraseña</Text>
           <TextInput
-            placeholder="New Password"  
+            placeholder="Nueva Contraseña"  
             secureTextEntry
             style={styles.input}
             value={newPassword}
             onChangeText={setNewPassword}
           />
           <TextInput
-            placeholder="Confirm Password"
+            placeholder="Confirmar Contraseña"
             secureTextEntry
             style={styles.input}
             value={confirmPassword}

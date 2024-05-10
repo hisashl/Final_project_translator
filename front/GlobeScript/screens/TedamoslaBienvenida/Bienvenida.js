@@ -1,10 +1,12 @@
 import { StyleSheet, Text, View, FlatList, Animated } from 'react-native';
-import React from 'react';
+import React, {  useEffect } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import slides from './slide'; // Asegúrate de que 'slides' es el nombre correcto del import
 import BItem from './BItem';
 import Paginador from './Paginador';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 export default function Bienvenida() {
+  const navigation = useNavigation();
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const scrollX = React.useRef(new Animated.Value(0)).current;
   const slidesRef = React.useRef(null);
@@ -20,6 +22,29 @@ export default function Bienvenida() {
     return <BItem item={item} isLastItem={isLastItem} />;
   };
 
+  useEffect(() => {
+    
+    const checkAuthentication = async () => {
+      try {
+        const username = await AsyncStorage.getItem('username');
+        const password = await AsyncStorage.getItem('password');
+        
+        if (username && password) {
+          navigation.replace('Home');
+        }
+      } catch (error) {
+        console.error('Error checking authentication', error);
+      }
+    };
+  
+    checkAuthentication();
+  
+
+     
+    
+    
+    
+  }, []);
   return (
     <View style={styles.container}>
       <View style={{ flex: 3}}>

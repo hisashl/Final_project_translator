@@ -45,10 +45,28 @@ export default function LoginScreen() {
 
   useEffect(() => {
     const source = axios.CancelToken.source();
+    const checkAuthentication = async () => {
+      try {
+        const username = await AsyncStorage.getItem('username');
+        const password = await AsyncStorage.getItem('password');
+        
+        if (username && password) {
+          navigation.replace('Home');
+        }
+      } catch (error) {
+        console.error('Error checking authentication', error);
+      }
+    };
+  
+    checkAuthentication();
+  
 
     return () => {
       source.cancel('Componente desmontado');
     };
+    
+    
+    
   }, []);
 
   const handleLogin = useCallback(() => {
@@ -152,15 +170,15 @@ export default function LoginScreen() {
             {isLoading ? (
               <ActivityIndicator size="small" color="#FFFFFF" /> // Indicador de carga mientras se está procesando la solicitud
             ) : (
-              <Text style={styles.buttonText}>Login</Text>
+              <Text style={styles.buttonText}>Ingresar</Text>
             )}
           </TouchableOpacity>
           <View style={styles.footer}>
             <Text onPress={() => navigation.navigate('Mail')} style={styles.footerText}>
-              Forgot Password?
+              Olvido su contraseña?
             </Text>
             <Text onPress={signup} style={styles.footerText}>
-              Sign Up
+              Registro
             </Text>
           </View>
         </View>

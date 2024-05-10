@@ -1953,10 +1953,10 @@ const pickerSelectStylescustom = {
       placeholderTextColor={theme === 'light' ? "#888" : 'gray'}
     />
     <TouchableOpacity style={styles.searchButton} onPress={handleSearchInput}>
-      <Text style={styles.searchButtonText}>Buscar input</Text>
+      <Text style={styles.searchButtonText}>Entrada</Text>
     </TouchableOpacity>
     <TouchableOpacity style={styles.searchButton} onPress={handleSearchTrans}>
-      <Text style={styles.searchButtonText}>Buscar trans</Text>
+      <Text style={styles.searchButtonText}>Traduccion</Text>
     </TouchableOpacity>
   </View>
 )}

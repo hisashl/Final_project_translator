@@ -78,7 +78,7 @@ export default function Verification({ route }) {
       );
   
       if (response.data.status === 'success') {
-        Alert.alert('Verification', 'Código de verificación reenviado con éxito.');
+        Alert.alert('Verificacion', 'Código de verificación reenviado con éxito.');
       } else {
         Alert.alert( response.data.message);
       }

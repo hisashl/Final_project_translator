@@ -285,7 +285,7 @@ const TextScreen = () => {
             const result = await response.json();
   
             if (response.ok) {
-              Alert.alert('Success', 'Document deleted successfully.');
+              Alert.alert('Success', 'Documento eliminado correctamente.');
               fetchDocuments(); // Asegúrate de que esta función esté definida y accesible
             } else {
               Alert.alert('Error', result.error || 'Failed to delete the document.');
@@ -309,7 +309,7 @@ const TextScreen = () => {
       const date = new Date(item.last_modification);
       if (!isNaN(date)) {
         // Format the date using toLocaleDateString or toLocaleString
-        formattedDate = date.toLocaleDateString('en-US', {
+        formattedDate = date.toLocaleDateString('es-Mx', {
           year: 'numeric',
           month: 'long',
           day: 'numeric',
@@ -326,9 +326,9 @@ const TextScreen = () => {
         style={styles.card}
         onPress={() => navigation.navigate('ShowText', { document: item })}
       >
-        <Text style={styles.title}>{item.title || 'No Title'}</Text>
-        <Text style={styles.description}>{item.description || 'No Description'}</Text>
-        <Text style={styles.text}>{item.text ? item.text.substring(0, 20) + '...' : 'No Text Available'}</Text>
+        <Text style={styles.title}>{item.title || 'Sin titulo'}</Text>
+        <Text style={styles.description}>{item.description || 'Sin descripcion'}</Text>
+        <Text style={styles.text}>{item.text ? item.text.substring(0, 20) + '...' : 'No hay testo disponible'}</Text>
         <Text style={styles.date}>{formattedDate}</Text>
         <View style={styles.trashcontainer}>
           <Ionicons name="trash" size={25} color="#1338bd" onPress={() => handleDeleteDocument(item)} />
@@ -406,7 +406,7 @@ const TextScreen = () => {
         style={[styles.container]}>
         <TextInput
           style={styles.searchInput}
-          placeholder="Search by title..."
+          placeholder="Buscar por titulo..."
           placeholderTextColor={theme === 'light' ? "#888" : 'gray'}
           value={searchText}
           onChangeText={setSearchText} // Actualiza el texto de búsqueda

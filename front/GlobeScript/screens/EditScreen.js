@@ -290,11 +290,11 @@ const loadProfiles = async () => {
       const result = response.data;
   
       if (result.includes('successfully')) {
-        Alert.alert('Success', 'Profile updated successfully.');
+        Alert.alert('Exito', 'Perfil actualizado correctamente.');
          await updateCurrentProfile(); // Actualiza el perfil actual sin cambiarlo
         // Actualiza la lista de perfiles si es necesario
       } else {
-        Alert.alert('Error', 'Failed to update profile.');
+        Alert.alert('Error', 'Fallo el actualizar el perfil.');
       }
     } catch (error) {
       Alert.alert('Error', error.message || 'An error occurred while updating the profile.');
@@ -395,7 +395,7 @@ const apply = () => {
   
     const user_id = await AsyncStorage.getItem('username');
     if (!user_id) {
-      Alert.alert('Error', 'User ID not found.');
+      Alert.alert('Error', 'User ID no encontrado.');
       return;
     }
   
@@ -521,7 +521,7 @@ const handleAddWord = async () => {
       const result = await response.text(); // Asumimos que la respuesta es texto plano
 
       if (response.ok && result.includes('successfully')) {
-        Alert.alert('Success', `Word added successfully and cloud list updated: ${result}`);
+        Alert.alert('Exito', `Palabra agregada exitosamente y lista en la nube actualizada: ${result}`);
       } else {
         throw new Error(result || 'Failed to update the cloud.');
       }
@@ -529,10 +529,10 @@ const handleAddWord = async () => {
       // Limpia el campo de nueva palabra
       setNewWord('');
     } catch (error) {
-      Alert.alert('Error', error.message || 'Failed to add the word.');
+      Alert.alert('Error', error.message || 'No se pudo agregar la  palabra');
     }
   } else {
-    Alert.alert('Duplicate or Empty', 'That word is already in the list or the input is empty.');
+    Alert.alert('Duplicado o vacio', 'La palabra ya existe o esta vacia');
   }
 };
 
@@ -553,12 +553,12 @@ const handleRemoveWord = async (wordToRemove) => {
     const result = await response.text(); // Asumimos que la respuesta es texto plano
 
     if (response.ok && result.includes('successfully')) {
-      Alert.alert('Success', `${wordToRemove} has been removed and list updated in the cloud`);
+      Alert.alert('Exito', `${wordToRemove} fue removida exitosamente y la lista en la nube fue actualizada`);
     } else {
       throw new Error(result || 'Failed to update the cloud.');
     }
   } catch (error) {
-    Alert.alert('Error', 'Failed to remove the word.');
+    Alert.alert('Error', 'No se pudo remover la palabra.');
   }
 };
 
@@ -567,7 +567,7 @@ const handleRemoveWord = async (wordToRemove) => {
 const clearCredentials = async () => {
   try {
     await AsyncStorage.removeItem('username');
-    await AsyncStorage.removeItem('password');
+    await AsyncStorage.removeItem('password');c
     console.log('Username and password have been removed');
   } catch (error) {
     console.error('Failed to clear the async storage:', error);
@@ -748,7 +748,7 @@ const styles = StyleSheet.create({
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView contentContainerStyle={styles.scrollViewContainer}>
           <View style={styles.navBar}>
-            <Text style={styles.navTitle}>Configuration</Text>
+            <Text style={styles.navTitle}>Configuracion</Text>
           </View>
           <View style={styles.footerMenu}>
           <Ionicons name="create" size={40} color="#000" onPress={handleLogout}/>
@@ -763,7 +763,7 @@ const styles = StyleSheet.create({
       />
       <Button title="Add Word" onPress={handleAddWord} />
      
-     <Text style = {styles.label}>Censured Words List</Text>
+     <Text style = {styles.label}>Lista de palabras a censurar</Text>
      <ScrollView style={styles.scrollView}>
       {censorWords.map((word, index) => (
         <View key={index} style={styles.wordContainer}>

@@ -487,7 +487,7 @@ const handleSearch = () => {
                   style={styles.navdescription}
                   value={title}
                   onChangeText={setTitle}
-                  placeholder="Title"
+                  placeholder="Titulo"
                 />
               </View>
 
@@ -496,13 +496,13 @@ const handleSearch = () => {
                   style={styles.textdescription}
                   value={description}
                   onChangeText={setDescription}
-                  placeholder="Description"
+                  placeholder="Descripcion"
                   multiline
                 />
                 {/* <Button title="Negritas" onPress={injectBoldScript} /> */}
-                <Button title="Save Changes" onPress={handleSave} />
+                <Button title="Guardar cambios" onPress={handleSave} />
                 
-                <Button title="Delete Document" onPress={() => handleDeleteDocument()} />
+                <Button title="Borrar documento" onPress={() => handleDeleteDocument()} />
                 <Button title="Compartir archivo" onPress={handleShare} />
                 <Button title="Descargar texto seleccionado" onPress={handleDownload} disabled={!selectedText.trim()} />
               </View>
@@ -518,7 +518,7 @@ const handleSearch = () => {
 
               <StatusBar style="auto" />
               
-              <Button title="Add Comment" onPress={handleAddComment} />
+              <Button title="Agregar comentario" onPress={handleAddComment} />
               <View style={styles.searchContainer}>
  
 </View>
