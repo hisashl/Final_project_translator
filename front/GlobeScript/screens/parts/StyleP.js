@@ -59,6 +59,21 @@ const useCustomStyles = () => {
       shadowRadius: 4,
       elevation: 5,
     },
+    modalViewss: {
+      margin: 20,
+      backgroundColor: theme === 'light' ? '#fff' : '#3d3e40',
+      borderRadius: 20,
+      padding: 35,
+      alignItems: 'center',
+      shadowColor: '#b0c4eb',
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5,
+    },
     modalViews: {
       margin: 20,
       backgroundColor: 'white',
@@ -92,6 +107,8 @@ const useCustomStyles = () => {
       color:  theme === 'light' ? styler.textColor : 'white',  // Usa el color de texto de styler o cae de nuevo a negro
     },
     wording:{
+      width: 280,  // Ancho fijo
+      textAlign: 'center',
       marginTop: 20,
       marginBottom: 15,
       fontSize: 16,

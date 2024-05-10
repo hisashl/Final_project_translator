@@ -5,8 +5,9 @@ import { WebView } from 'react-native-webview';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import useCustomStyles from './parts/StyleP';
+import { useStyle } from './StyleContext'
 
-
+// const color =  theme === 'light' ? 'black' : 'white'
 const ShowText = ({ route, navigation }) => {
   const webviewRef = useRef(null);
   const [title, setTitle] = useState(route.params?.document.title || '');
@@ -16,6 +17,8 @@ const ShowText = ({ route, navigation }) => {
   const initialComments = JSON.stringify(route.params?.document.comments || {});
   const [selectedText, setSelectedText] = useState('');
   const styles = useCustomStyles();
+  const { styler, updateStyles, theme, toggleTheme } = useStyle();
+  const color =  theme === 'light' ? 'white' : 'gray';
   const [webviewHeight, setWebviewHeight] = useState(Dimensions.get('window').height - 200); // Ajusta el tamaño según sea necesario
   const [selectedColor, setSelectedColor] = useState('#FFFF00'); // Default to yellow
 const [modalVisible, setModalVisible] = useState(false);
@@ -150,8 +153,13 @@ const htmlContent = `
 <head>
   <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
   <style>
-    body { font-family: Arial; }
-    #editor-container { height: 300px; }
+    body {
+      background-color: ${color}; /* Color de fondo claro */ 
+       font-family: Arial; }
+    #editor-container {
+      background-color:  ${color}; /* Color de fondo claro */ 
+      height: 300px; }
+     
     .commented { background-color: green; }
     .highlight { background-color: yellow; }
     <style>

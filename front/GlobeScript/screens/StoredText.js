@@ -120,8 +120,8 @@ const StoredText = ({ route  }) => {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <ScrollView contentContainerStyle={styles.scrollViewContainer}>
             <View style={styles.navBar}>
-              <Text style={styles.navTitle}>Save</Text>
-              <Ionicons name="save" size={30} color="#000" />
+              <Text style={styles.navTitle}>Guardar</Text>
+            
             </View>
             <View style={styles.footerMenu}>
   
@@ -146,7 +146,7 @@ const StoredText = ({ route  }) => {
                 multiline
               />
         </View>
-        <View style = {styles.modalView}>
+        <View style = {styles.modalViewss}>
           
           <TextInput
                     style={styles.wording}
@@ -158,7 +158,8 @@ const StoredText = ({ route  }) => {
                   />
                   </View>
                   
-                <Button title="Checar y guardar" onPress={checkAndSave} />
+                 
+                <Ionicons name="checkmark-done-outline" size={40} color={theme === 'light' ? "#888" : '#fffe'} onPress={checkAndSave}/>
 
           </ScrollView>
         </TouchableWithoutFeedback>
