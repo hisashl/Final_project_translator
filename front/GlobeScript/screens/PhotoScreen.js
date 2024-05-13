@@ -1012,65 +1012,69 @@ const loadCensorWords = async () => {
     callCloudFunction(sourceLanguage, word);
     
   };
-  
-  
-  const playSound = async (audioUrl) => {
-  
+ 
+const fetchPronunciation = () => {
+  fetch('https://us-central1-lingua-80a59.cloudfunctions.net/text-speech', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ word: selectedWord, lang: sourcesyn })
+  })
+  .then(response => {
+    if (!response.ok) {  // Verifica si la respuesta fue exitosa
+      throw new Error('Failed to fetch pronunciation. The language might not be supported.');
+    }
+    return response.blob();
+  })
+  .then(blob => {
+   
+    const reader = new FileReader();
+   
+    reader.readAsDataURL(blob);
+    reader.onloadend = () => {
+      playSound(reader.result);
+    };
+    console.log('Blob:', reader);
+  })
+  .catch(error => {
+   
+    Alert.alert('Pronunciation Error', error.toString());
+  });
+};
+
+
+const playSound = async (fileUri) => {
+  try {
+    // Configurar el modo de audio antes de cargar o reproducir el sonido
+    await Audio.setAudioModeAsync({
+      allowsRecordingIOS: false,
+      playsInSilentModeIOS: true,
+      playThroughEarpieceAndroid: false,
+      shouldDuckAndroid: true,
+      staysActiveInBackground: false,
+    });
+
+    // Cargar el archivo de audio para reproducirlo
     const { sound } = await Audio.Sound.createAsync(
-      { uri: audioUrl },
+      { uri: fileUri },
       { shouldPlay: true }
     );
-    setSound(sound);
 
+    // Reproducir el sonido
     await sound.playAsync();
+    
+    // Manejo del estado de reproducción del sonido
     sound.setOnPlaybackStatusUpdate(async (playbackStatus) => {
       if (playbackStatus.didJustFinish) {
+        // Descargar el sonido después de reproducirlo completamente
         await sound.unloadAsync();
       }
     });
-  };
-
-  const fetchPronunciation = () => {
-    fetch('https://us-central1-lingua-80a59.cloudfunctions.net/text-speech', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ word: selectedWord, lang: sourcesyn })
-    })
-    .then(response => {
-      if (!response.ok) {  // Verifica si la respuesta fue exitosa
-        throw new Error('Failed to fetch pronunciation. The language might not be supported.');
-      }
-      return response.blob();
-    })
-    .then(blob => {
-      const reader = new FileReader();
-      reader.readAsDataURL(blob);
-      reader.onloadend = () => {
-        playSound(reader.result);
-      };
-    })
-    .catch(error => {
-     
-      Alert.alert('Pronunciation Error', error.toString());
-    });
-  };
-  
-
-  
-  const handleWordPresstrad = (word) => {
-    if(searchpos() ===  false)
-    return;
-    console.log("Palabra Seleccionada: " + word);
-    setSynonyms(''); // Limpia los sinónimos anteriores
-    setDefinition(''); // Limpia la definición anterior
-    setSelectedWord(word); // Guarda la palabra seleccionada
-    setSourcesyn(targetLanguage); // Establece el idioma para la traducción
-    callCloudFunction(targetLanguage, word);
-  
-  };
-  
+  } catch (error) {
+    console.error("Error playing sound:", error);
+  }
+};
   
   // const handleLanguageChange = async (newLanguage) => {
   //   if (newLanguage){
