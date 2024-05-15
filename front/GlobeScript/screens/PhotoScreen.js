@@ -78,6 +78,9 @@ const PhotoScreen = ({ route  }) => {
       saveImage(result.assets[0].uri);
       console.log('Image URI from files:', result.assets[0].uri);
       animateText("cargando texto...");
+      if( alertShownmanchas){
+        showAlertmanchas(); 
+      }
     }
   };
 
@@ -107,6 +110,9 @@ const PhotoScreen = ({ route  }) => {
         saveImage(result.assets[0].uri);
         console.log('Image URI from camera:', result.assets[0].uri);
         animateText("cargando texto...");
+        if( alertShownmanchas){
+          showAlertmanchas(); 
+        }
       }
     } else {
       Alert.alert('Permissions required', 'Camera and media library permissions are required to take photos');
@@ -173,6 +179,9 @@ const PhotoScreen = ({ route  }) => {
       saveImage(result.assets[0].uri);
       console.log('Image URI from gallery:', result.assets[0].uri);
       animateText("cargando texto...");
+      if( alertShownmanchas){
+        showAlertmanchas(); 
+      }
     }
   };
    
@@ -212,9 +221,9 @@ const PhotoScreen = ({ route  }) => {
         const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
         console.log('File available at', downloadURL);
        // await AsyncStorage.setItem('showAdvertenciamanchas', 'false');
-        if( alertShownmanchas){
-          showAlertmanchas(); 
-        }
+      //  if( alertShownmanchas){
+      //   showAlertmanchas(); 
+      // }
         
         // Detectar texto en la imagen usando la API de Google Cloud Vision
         try {
