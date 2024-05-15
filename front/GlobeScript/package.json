@@ -54,6 +54,7 @@
     "react-native-color-wheel": "^0.1.7",
     "react-native-crypto": "^2.2.0",
     "react-native-crypto-js": "^1.0.0",
+    "react-native-fast-image": "^8.6.3",
     "react-native-fs": "^2.20.0",
     "react-native-gesture-handler": "~2.16.1",
     "react-native-google-signin": "^2.1.1",

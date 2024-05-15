@@ -123,7 +123,8 @@ const useCustomStyles = () => {
     commentBox: {
       padding: 10,
       margin: 10,
-      backgroundColor: '#f0f0f0',
+      //CBD0D5
+      backgroundColor: theme === 'light' ? "#f0f0f0" : 'CBD0D5',
       borderRadius: 5,
       borderWidth: 1,
       borderColor: '#ccc'
@@ -306,7 +307,9 @@ const useCustomStyles = () => {
     },
     searchContainer: {
       flexDirection: 'row',
-      alignItems: 'center', // Cambia 'right' por 'center' para alinear correctamente los elementos
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 10,
       marginBottom: 15,
       
     },

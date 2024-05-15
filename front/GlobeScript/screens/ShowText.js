@@ -6,7 +6,8 @@ import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import useCustomStyles from './parts/StyleP';
 import { useStyle } from './StyleContext'
-
+import { Ionicons } from '@expo/vector-icons';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 // const color =  theme === 'light' ? 'black' : 'white'
 const ShowText = ({ route, navigation }) => {
   const webviewRef = useRef(null);
@@ -18,7 +19,7 @@ const ShowText = ({ route, navigation }) => {
   const [selectedText, setSelectedText] = useState('');
   const styles = useCustomStyles();
   const { styler, updateStyles, theme, toggleTheme } = useStyle();
-  const color =  theme === 'light' ? 'white' : 'gray';
+  const color =  theme === 'light' ? 'white' : '#656A6D';
   const [webviewHeight, setWebviewHeight] = useState(Dimensions.get('window').height - 200); // Ajusta el tamaño según sea necesario
   const [selectedColor, setSelectedColor] = useState('#FFFF00'); // Default to yellow
 const [modalVisible, setModalVisible] = useState(false);
@@ -54,7 +55,10 @@ const { width, height } = Dimensions.get('window');
       Alert.alert("Error", "El título no puede tener más de 30 caracteres.");
       return;
     }
-
+    if (description.length > 255) {
+      Alert.alert("Error", "La descripcion excede el tamaño de 255 caracteres");
+      return;
+    } 
     const userId = await AsyncStorage.getItem('username');
     if (userId) {
       try {
@@ -399,8 +403,12 @@ const onMessage = (event) => {
   try {
     const data = JSON.parse(event.nativeEvent.data);
     console.log(data.comment);
-    if(data.comment)
-    setCurrentComment(data.comment);
+    if(data.comment){
+    setCurrentComment(data.comment);}
+    else
+    {
+      setCurrentComment("Sin comentarios");
+    }
      
   } catch (error) {
     console.error('Error processing message from WebView:', error);
@@ -505,15 +513,20 @@ const handleSearch = () => {
                   value={description}
                   onChangeText={setDescription}
                   placeholder="Descripcion"
+                  placeholderTextColor={theme === 'light' ? "#888" : 'gray'}
                   multiline
                 />
-                {/* <Button title="Negritas" onPress={injectBoldScript} /> */}
-                <Button title="Guardar cambios" onPress={handleSave} />
+                  <View style={styles.footerMenu}>
+                <Icon name="highlight-off" size={40} color={theme === 'light' ? "#888" : '#B1D3EE'}  onPress={() => handleDeleteDocument()} />
+                <Ionicons name="archive" size={40} color={theme === 'light' ? "#888" : '#B1D3EE'}  onPress={handleShare}  />
                 
-                <Button title="Borrar documento" onPress={() => handleDeleteDocument()} />
-                <Button title="Compartir archivo" onPress={handleShare} />
-                <Button title="Descargar texto seleccionado" onPress={handleDownload} disabled={!selectedText.trim()} />
+                <Ionicons name="pricetag" size={40} color={theme === 'light' ? "#888" : '#B1D3EE'}  onPress={handleAddComment}  />
+               
+
+                  </View>
+               
               </View>
+              <Button title="Descargar Texto Seleccionado" onPress={handleDownload} disabled={!selectedText.trim()} />
 
               <View style={styles.commentBox}>
   {currentComment ? (
@@ -525,11 +538,7 @@ const handleSearch = () => {
 
 
               <StatusBar style="auto" />
-              
-              <Button title="Agregar comentario" onPress={handleAddComment} />
-              <View style={styles.searchContainer}>
- 
-</View>
+             
              
 <WebView
   ref={webviewRef}
