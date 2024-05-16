@@ -366,9 +366,6 @@ const apply = () => {
   
 
 
-  if (!fontsLoaded) {
-    return <View><Text>Loading...</Text></View>;
-  }
   const handleFontSizeChange = (value) => {
     setFontSize(value);
     // Aquí puedes agregar más acciones que quieras ejecutar cuando cambie el valor del Slider

@@ -573,7 +573,7 @@ const PhotoScreen = ({ route  }) => {
         const isHighlighted = highlightWords.length > 0 && highlightWords.some(word => segmentLower.includes(word));
     
         acc.push(
-          <TouchableOpacity key={index} onPress={() => handleWordPresstrad(segment)}>
+          <TouchableOpacity key={index} onPress={() =>  handleWordPresstrad(segment)}>
             <Text
               style={[
                 styles.word,
@@ -1012,13 +1012,28 @@ const loadCensorWords = async () => {
   const handleWordPress = (word) => {
     if(searchprev() ===  false)
     return;
+    const cleanedWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
 
-    console.log("Palabra Seleccionada: " + word);
+    console.log("Palabra Seleccionada: " + cleanedWord);
     setSynonyms(''); // Limpia los sinónimos anteriores
     setDefinition(''); // Limpia la definición anterior
-    setSelectedWord(word); // Guarda la palabra seleccionada
+    setSelectedWord(cleanedWord); // Guarda la palabra seleccionada
     setSourcesyn(sourceLanguage); // Establece el idioma para la traducción
-    callCloudFunction(sourceLanguage, word);
+    callCloudFunction(sourceLanguage, cleanedWord);
+    
+  };
+  const handleWordPresstrad = (word) => {
+    if(searchprev() ===  false)
+    return;
+    const cleanedWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
+
+
+    console.log("Palabra Seleccionada: " + cleanedWord);
+    setSynonyms(''); // Limpia los sinónimos anteriores
+    setDefinition(''); // Limpia la definición anterior
+    setSelectedWord(cleanedWord); // Guarda la palabra seleccionada
+    setSourcesyn(targetLanguage); // Establece el idioma para la traducción
+    callCloudFunction(targetLanguage, cleanedWord);
     
   };
  
