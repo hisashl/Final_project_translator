@@ -130,7 +130,7 @@ const useCustomStyles = () => {
       borderColor: '#ccc'
     },
     commentText: {
-      color: '#333',
+      color: '#fff',
       fontSize: 16,
     },
 

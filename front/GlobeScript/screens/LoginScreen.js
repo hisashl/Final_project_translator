@@ -148,13 +148,13 @@ export default function LoginScreen() {
             <Image source={require('../assets/Enter.png')} style={styles.image} />
           </View>
           <TextInput
-            placeholder="Username"
+            placeholder="Usuario"
             style={styles.input}
             value={username}
             onChangeText={setUsername}
           />
           <TextInput
-            placeholder="Password"
+            placeholder="Contraseña"
             secureTextEntry
             style={styles.input}
             value={password}

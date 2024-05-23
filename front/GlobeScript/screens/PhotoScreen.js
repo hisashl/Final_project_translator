@@ -44,7 +44,7 @@ const PhotoScreen = ({ route  }) => {
   const [image, setImage] = useState(null);
   const [imageVisible, setImageVisible] = useState(false);
   const [sourceLanguage, setSourceLanguage] = useState();
-  const [targetLanguage, setTargetLanguage] = useState();
+  const [targetLanguage, setTargetLanguage] = useState("es");
   const [textToTranslate, setTextToTranslate] = useState('');
   const [translatedText, setTranslatedText] = useState('');
   const [definition, setDefinition] = useState('');

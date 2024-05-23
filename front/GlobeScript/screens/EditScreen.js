@@ -564,7 +564,7 @@ const handleRemoveWord = async (wordToRemove) => {
 const clearCredentials = async () => {
   try {
     await AsyncStorage.removeItem('username');
-    await AsyncStorage.removeItem('password');c
+    await AsyncStorage.removeItem('password');
     console.log('Username and password have been removed');
   } catch (error) {
     console.error('Failed to clear the async storage:', error);
@@ -758,7 +758,7 @@ const styles = StyleSheet.create({
         onChangeText={setNewWord}
         style = {styles.textInput}
       />
-      <Button title="Add Word" onPress={handleAddWord} />
+      <Button title="Agregar palabra" onPress={handleAddWord} />
      
      <Text style = {styles.label}>Lista de palabras a censurar</Text>
      <ScrollView style={styles.scrollView}>
